@@ -1,9 +1,77 @@
 # How I Set Up My Cybersecurity Portfolio
 
-As a cybersecurity analyst, I wanted a professional yet straightforward way to highlight my skills, experience, and ongoing projects. A public portfolio felt like the perfect solution, not just for potential employers but also to track and share my growth in this field.
+**1. Buy Your Domain**
 
-I started by choosing GitHub Pages to host my portfolio since it was simple, free, and offered a version control that would allow for future changes to the content and appearance of my site in a way which I found to be aesthetically pleasing. My portfolio was simple to get up and running. I opened a GitHub repository with a simple index.html file, and incorporated PicoCSS to get a professional feel without feeling overwhelmed.
+Go to Namecheap.com, sign in or create an account.
 
-In my bio creation I showcase my expertise in endpoint detection and response (EDR), incident handling, and real-time threat analysis. I included links to my GitHub and LinkedIn; this way others can easly find me and connect.
+In the search bar, enter your desired domain (e.g., vladcyber.it.com) and click Search.
 
-I'm excited to expand my portfolio with detailed project breakdowns that i have been working on, blog posts, and insights on how i created a homemade SOC simulation lab. In this lab, I built virtual machines, scanned them using Tenable, and walked through the full vulnerability patching lifecycle, from discovery and assessment to remediation and validation. If you're starting out in security, I'd highly recommend creating your own portfolio as soon as possible. Start small, keep it personal, and make it authentic. I believe it's one of the best ways to learn, grow, and showcase your passion professionally.
+When it’s available, click Add to Cart, then Checkout.
+
+Leave WhoisGuard enabled for privacy, and complete payment.
+
+In your dashboard, click Domain List, then Manage next to your new domain.
+
+**2. Point the Domain to GitHub Pages**
+
+In the Manage view, select the Advanced DNS tab.
+
+Delete any default URL Redirect or parking CNAME records.
+
+Click Add New Record four times and enter A records:
+
+Host: @, Value: 185.199.108.153
+
+Host: @, Value: 185.199.109.153
+
+Host: @, Value: 185.199.110.153
+
+Host: @, Value: 185.199.111.153
+
+Click Add New Record, choose CNAME Record:
+
+Host: www, Value: vignatovskiy1.github.io.
+
+Save all changes (green check icon).
+
+Wait ~15 minutes for DNS propagation.
+
+In GitHub, go to your repo Settings → Pages, set Custom domain to vladcyber.it.com, check Enforce HTTPS, and save.
+
+**3. Set Up Branded Email with Zoho Mail**
+
+Visit mail.zoho.com, choose Business Email → Forever Free Plan, and sign up with “Use a domain I own.”
+
+Enter your domain vladcyber.it.com, then copy the TXT verification value.
+
+Back in Namecheap Advanced DNS, click Add New Record → TXT Record:
+
+Host: @, Value: (paste Zoho’s TXT verification)
+
+Click Add New Record → MX Record (repeat three times):
+
+Host: @, Value: mx.zoho.com, Priority: 10
+
+Host: @, Value: mx2.zoho.com, Priority: 20
+
+Host: @, Value: mx3.zoho.com, Priority: 50
+
+Click Add New Record → TXT Record for SPF:
+
+Host: @, Value: v=spf1 include:zoho.com ~all
+
+Wait ~20 minutes, then in Zoho click Verify all records.
+
+In Zoho Admin, create a user mailbox (e.g., contact@vladcyber.it.com).
+
+**4. Build and Deploy Your Homepage**
+
+Navigate to your GitHub repo vignatovskiy1 and select Add file → Create new file.
+
+Name the file index.html.
+
+Paste a complete HTML document 
+
+Scroll down and Commit new file to the main branch.
+
+Wait a minute for GitHub Pages to build, then go to Settings → Pages in your repo, ensure the branch is set to main and your custom domain is applied. Enable Enforce HTTPS, and save.
