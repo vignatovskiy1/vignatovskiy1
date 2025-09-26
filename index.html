@@ -212,6 +212,7 @@
         <div class="actions">
           <button id="copyButton" disabled>Copy to clipboard</button>
           <button id="downloadButton" disabled>Download .txt</button>
+          <button class="secondary" id="clearButton" type="button" disabled>Clear files</button>
           <button class="secondary" id="testButton" type="button">Load Test Data</button>
         </div>
       </div>
@@ -232,6 +233,7 @@
     const downloadButton = document.getElementById('downloadButton');
     const errorEl = document.getElementById('error');
     const testButton = document.getElementById('testButton');
+    const clearButton = document.getElementById('clearButton');
 
     let parsedSummaries = [];
     let activeIndex = -1;
@@ -243,6 +245,8 @@
       copyButton.disabled = true;
       downloadButton.disabled = true;
       fileListEl.innerHTML = '';
+      fileInput.value = '';
+      clearButton.disabled = true;
     }
 
     function showError(message) {
@@ -512,6 +516,7 @@
       activeIndex = 0;
       populateFileList(parsedSummaries);
       renderSummary(0);
+      clearButton.disabled = false;
     }
 
     function readFileAsText(file) {
@@ -524,13 +529,14 @@
     }
 
     async function processFiles(fileList) {
+      const files = fileList ? Array.from(fileList) : [];
       resetState();
       clearError();
-      if (!fileList || fileList.length === 0) {
+      if (files.length === 0) {
         return;
       }
       try {
-        const promises = Array.from(fileList).map(async (file) => {
+        const promises = files.map(async (file) => {
           const text = await readFileAsText(file);
           let parsed;
           try {
@@ -611,6 +617,12 @@
       URL.revokeObjectURL(link.href);
     });
 
+    clearButton.addEventListener('click', () => {
+      resetState();
+      clearError();
+      dropZone.focus();
+    });
+
     testButton.addEventListener('click', () => {
       clearError();
       const sampleData = {
@@ -672,6 +684,7 @@
       activeIndex = 0;
       populateFileList(parsedSummaries);
       renderSummary(0);
+      clearButton.disabled = false;
     });
   </script>
 </body>
