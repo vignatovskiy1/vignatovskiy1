@@ -1,32 +1,678 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Vlad Ignatovskiy | Cybersecurity Portfolio</title>
+  <title>FortiEDR Incident Summary Formatter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+      background-color: #f4f5f7;
+      color: #1f2933;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        background-color: #0f172a;
+        color: #e2e8f0;
+      }
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    main {
+      width: min(960px, 100%);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 18px;
+      padding: 2rem;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+      backdrop-filter: blur(4px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .card {
+        background: rgba(15, 23, 42, 0.85);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+    }
+
+    .uploader {
+      display: grid;
+      gap: 1.5rem;
+      margin-block: 1.5rem;
+    }
+
+    .drop-zone {
+      border: 2px dashed rgba(59, 130, 246, 0.6);
+      border-radius: 14px;
+      padding: 2rem;
+      text-align: center;
+      transition: border-color 0.2s ease, background-color 0.2s ease;
+      cursor: pointer;
+    }
+
+    .drop-zone.dragover {
+      border-color: rgb(37, 99, 235);
+      background: rgba(37, 99, 235, 0.08);
+    }
+
+    .file-input {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    input[type="file"] {
+      display: inline-block;
+    }
+
+    .file-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .file-pill {
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.15);
+      color: inherit;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+      border: 1px solid transparent;
+      font-size: 0.95rem;
+    }
+
+    .file-pill:hover,
+    .file-pill.selected {
+      background: rgba(37, 99, 235, 0.2);
+      border-color: rgba(37, 99, 235, 0.35);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    button {
+      padding: 0.55rem 1.2rem;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background: rgb(37, 99, 235);
+      color: white;
+      transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background: rgba(15, 23, 42, 0.08);
+      color: inherit;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      button.secondary {
+        background: rgba(148, 163, 184, 0.2);
+      }
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    pre {
+      background: rgba(15, 23, 42, 0.85);
+      color: #e2e8f0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      min-height: 320px;
+      white-space: pre;
+    }
+
+    @media (prefers-color-scheme: light) {
+      pre {
+        background: #10172a;
+      }
+    }
+
+    .error {
+      margin-top: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      background: rgba(220, 38, 38, 0.15);
+      color: #b91c1c;
+      font-weight: 600;
+      display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .error {
+        background: rgba(248, 113, 113, 0.12);
+        color: #fca5a5;
+      }
+    }
+
+    .footer-note {
+      font-size: 0.85rem;
+      color: rgba(15, 23, 42, 0.65);
+      margin-top: 1.5rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      .footer-note {
+        color: rgba(226, 232, 240, 0.6);
+      }
+    }
+  </style>
 </head>
 <body>
-  <main class="container">
-    <h1>Vlad Ignatovskiy</h1>
-    <p>
-      I'm Vlad Ignatovskiy, a cybersecurity analyst specializing in endpoint detection and response (EDR), incident response, and real-time threat analysis. I'm currently an EDR Analyst at Liquid Networx, where I proactively monitor enterprise networks across numerous locations. My expertise includes troubleshooting complex network infrastructure issues, mentoring teams on best practices, and reviewing EDR alerts to determine whether further investigation is needed.
-    </p>
-    <p>
-      Recently, I began learning Python and Java scripting to leverage automation and data analysis in strengthening cybersecurity operations. My recent projects include developing custom PowerShell scripts and configuring Azure Sentinel to visualize global attack data for situational awareness and reporting.
-    </p>
-    <p>
-      I'm passionate about continuously advancing my skills and collaborating on innovative security solutions. Let’s connect to discuss cybersecurity strategies and share insights.
-    </p>
+  <main>
+    <section class="card">
+      <h1>FortiEDR Incident Summary Formatter</h1>
+      <p>Upload one or more FortiEDR JSON files to generate an aligned incident summary that mirrors the required layout.</p>
 
-   <h2>Contact</h2>
-    <p><a href="mailto:contact@vladcyber.it.com">contact@vladcyber.it.com</a></p>
+      <div class="uploader" id="uploader">
+        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload FortiEDR JSON files">
+          <div class="file-input">
+            <strong>Click to choose or drag &amp; drop .json files</strong>
+            <input id="fileInput" type="file" accept="application/json,.json" multiple>
+          </div>
+        </div>
 
-    <h2>Find Me Online</h2>
-    <ul>
-      <li><a href="https://github.com/vignatovskiy1">GitHub</a></li>
-      <li><a href="https://www.linkedin.com/in/vlad-ignatovskiy-3770b61a8/">LinkedIn</a></li>
-    </ul>
+        <div class="file-list" id="fileList" aria-live="polite"></div>
+
+        <div class="actions">
+          <button id="copyButton" disabled>Copy to clipboard</button>
+          <button id="downloadButton" disabled>Download .txt</button>
+          <button class="secondary" id="testButton" type="button">Load Test Data</button>
+        </div>
+      </div>
+
+      <pre id="output" aria-live="polite"></pre>
+      <div class="error" id="error" role="alert"></div>
+
+      <p class="footer-note">The formatted summary keeps a fixed monospace layout with padded labels for quick analyst handoff.</p>
+    </section>
   </main>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const fileListEl = document.getElementById('fileList');
+    const outputEl = document.getElementById('output');
+    const copyButton = document.getElementById('copyButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const errorEl = document.getElementById('error');
+    const testButton = document.getElementById('testButton');
+
+    let parsedSummaries = [];
+    let activeIndex = -1;
+
+    function resetState() {
+      parsedSummaries = [];
+      activeIndex = -1;
+      outputEl.textContent = '';
+      copyButton.disabled = true;
+      downloadButton.disabled = true;
+      fileListEl.innerHTML = '';
+    }
+
+    function showError(message) {
+      errorEl.textContent = message;
+      errorEl.style.display = 'block';
+    }
+
+    function clearError() {
+      errorEl.textContent = '';
+      errorEl.style.display = 'none';
+    }
+
+    function padLabel(label) {
+      return (label + ':').padEnd(26, ' ');
+    }
+
+    function getBasename(value) {
+      if (typeof value !== 'string' || !value.trim()) {
+        return '';
+      }
+      const cleaned = value.trim();
+      const parts = cleaned.split(/[/\\]/);
+      return parts.pop() || cleaned;
+    }
+
+    function stripDomain(user) {
+      if (typeof user !== 'string') {
+        return '';
+      }
+      const trimmed = user.trim();
+      if (!trimmed) return '';
+      const separators = ['\\', '/'];
+      for (const sep of separators) {
+        if (trimmed.includes(sep)) {
+          const bits = trimmed.split(sep);
+          return bits[bits.length - 1];
+        }
+      }
+      return trimmed;
+    }
+
+    function findVirusTotalUrl(node) {
+      const visited = new Set();
+
+      function traverse(value) {
+        if (value === null || value === undefined) return null;
+        if (visited.has(value)) return null;
+        if (typeof value === 'string') {
+          const match = value.match(/https?:\/\/[^\s"']*virustotal[^\s"']*/i);
+          return match ? match[0] : null;
+        }
+        if (typeof value === 'object') {
+          visited.add(value);
+          if (Array.isArray(value)) {
+            for (const item of value) {
+              const found = traverse(item);
+              if (found) return found;
+            }
+          } else {
+            for (const key of Object.keys(value)) {
+              const found = traverse(value[key]);
+              if (found) return found;
+            }
+          }
+        }
+        return null;
+      }
+
+      return traverse(node);
+    }
+
+    function selectLatestClassification(list) {
+      if (!Array.isArray(list) || list.length === 0) return null;
+      let best = null;
+      let bestTime = Number.NEGATIVE_INFINITY;
+      let fallback = null;
+      list.forEach((entry, index) => {
+        if (!entry || typeof entry !== 'object') return;
+        const possibleDate = entry.date || entry.timestamp || entry.time || entry.updated || entry.created;
+        if (possibleDate) {
+          const parsed = Date.parse(possibleDate);
+          if (!Number.isNaN(parsed) && parsed >= bestTime) {
+            bestTime = parsed;
+            best = entry;
+          }
+        }
+        if (!fallback) {
+          fallback = entry;
+        }
+      });
+      return best || fallback;
+    }
+
+    function mapClassification(value) {
+      if (!value || typeof value !== 'string') return 'N/A';
+      const trimmed = value.trim();
+      if (!trimmed) return 'N/A';
+      const lower = trimmed.toLowerCase();
+      if (lower === 'classificationgood' || lower === 'safe') return 'Safe';
+      if (lower === 'classificationinconclusive' || lower === 'inconclusive') return 'Inconclusive';
+      if (trimmed.toLowerCase().startsWith('classification')) {
+        const rest = trimmed.slice('classification'.length);
+        if (!rest) return 'N/A';
+        return rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
+      }
+      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+    }
+
+    function resolveClassification(data) {
+      const automationList = data?.AutomationData?.classificationList;
+      if (Array.isArray(automationList) && automationList.length) {
+        const entry = selectLatestClassification(automationList);
+        const title = entry?.title || entry?.name || '';
+        const mapped = mapClassification(title);
+        if (mapped !== 'N/A') return mapped;
+      }
+      const fallback = data?.EventClassification;
+      return mapClassification(typeof fallback === 'string' ? fallback : '');
+    }
+
+    function resolveCompany(data) {
+      const primary = typeof data?.AppVendor === 'string' ? data.AppVendor.trim() : '';
+      if (primary) return primary;
+      const fallback = typeof data?.Alerts?.[0]?.MainApp?.Vendor === 'string' ? data.Alerts[0].MainApp.Vendor.trim() : '';
+      return fallback || 'N/A';
+    }
+
+    function resolveCertification(data) {
+      const signingStatus = typeof data?.SigningStatus === 'string' ? data.SigningStatus.trim().toLowerCase() : '';
+      const isSigned = data?.IsSigned === true || signingStatus === 'signed';
+      if (isSigned) return 'Signed';
+      if (data?.IsSigned === false || (signingStatus && signingStatus !== 'signed')) {
+        return 'Unsigned';
+      }
+      return 'N/A';
+    }
+
+    function resolveLoggedInUser(data) {
+      const loggedUser = data?.LoggedUsers?.[0]?.Name;
+      const cleanedLoggedUser = stripDomain(loggedUser);
+      if (cleanedLoggedUser) return cleanedLoggedUser;
+
+      const stackInfo = data?.StackInfos?.[0];
+      const extras = stackInfo?.CommonAdditionalInfo;
+      if (Array.isArray(extras)) {
+        const ownerInfo = extras.find(item => item && (item.Type === 16 || item.type === 16));
+        if (ownerInfo) {
+          const owner = stripDomain(ownerInfo.ProcessOwner || ownerInfo.ProcessEffectiveOwner || ownerInfo.Value || '');
+          if (owner) return owner;
+        }
+      }
+      return 'N/A';
+    }
+
+    function resolveAdditionalInfo(data) {
+      const stackInfo = data?.StackInfos?.[0];
+      const stackType = typeof stackInfo?.StackType === 'string' ? stackInfo.StackType.trim() : '';
+      if (stackType && stackType.toUpperCase().includes('SERVICE')) {
+        return 'Service Access';
+      }
+      return stackType || 'N/A';
+    }
+
+    function resolveTarget(data) {
+      const primary = typeof data?.AuxProcessName === 'string' ? data.AuxProcessName.trim() : '';
+      if (primary) return primary;
+      const stackInfo = data?.StackInfos?.[0];
+      const fromStack = typeof stackInfo?.AuxProcessName === 'string' ? stackInfo.AuxProcessName.trim() : '';
+      if (fromStack) return fromStack;
+      const stackType = typeof stackInfo?.StackType === 'string' ? stackInfo.StackType.trim() : '';
+      return stackType || 'N/A';
+    }
+
+    function resolveCommandLine(data) {
+      const primary = typeof data?.AppDetails?.CommandLine === 'string' ? data.AppDetails.CommandLine.trim() : '';
+      if (primary) return primary;
+      const fallback = typeof data?.Alerts?.[0]?.MainApp?.CommandLine === 'string' ? data.Alerts[0].MainApp.CommandLine.trim() : '';
+      return fallback || 'N/A';
+    }
+
+    function resolveProcess(data) {
+      const options = [
+        getBasename(data?.Application),
+        getBasename(data?.AppDetails?.Executable),
+        getBasename(data?.Alerts?.[0]?.MainApp?.Executable)
+      ];
+      const found = options.find(Boolean);
+      return found || 'N/A';
+    }
+
+    function buildSummary(data, sourceLabel) {
+      const eventId = data?.EventAggId ?? data?.EventId ?? data?.EventUniqueId ?? 'N/A';
+      const lines = [
+        padLabel('Event ID') + (eventId || 'N/A'),
+        padLabel('Process') + resolveProcess(data),
+        padLabel('Collector Group') + (data?.CollectorGroup || 'N/A'),
+        padLabel('Device') + (data?.HostName || 'N/A'),
+        padLabel('Logged-in User') + resolveLoggedInUser(data),
+        padLabel('Company') + resolveCompany(data),
+        padLabel('Certification') + resolveCertification(data),
+        padLabel('Classification') + resolveClassification(data),
+        padLabel('Virus Total link') + (findVirusTotalUrl(data) || 'N/A'),
+        '',
+        '',
+        padLabel('Target') + resolveTarget(data),
+        '',
+        '',
+        padLabel('Command Line') + resolveCommandLine(data),
+        '',
+        '',
+        padLabel('Additional information') + resolveAdditionalInfo(data),
+        '',
+        '',
+        padLabel('Tech notes'),
+        '',
+        '',
+        'Next Steps:',
+        'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
+        '-----------------------------------------------------------------------------------------------'
+      ];
+
+      return {
+        text: lines.join('\n'),
+        eventId: eventId && eventId !== 'N/A' ? eventId : sourceLabel
+      };
+    }
+
+    function renderSummary(index) {
+      if (index < 0 || index >= parsedSummaries.length) {
+        outputEl.textContent = '';
+        copyButton.disabled = true;
+        downloadButton.disabled = true;
+        activeIndex = -1;
+        return;
+      }
+      activeIndex = index;
+      const summary = parsedSummaries[index];
+      outputEl.textContent = summary.text;
+      copyButton.disabled = false;
+      downloadButton.disabled = false;
+
+      Array.from(fileListEl.children).forEach((child, idx) => {
+        child.classList.toggle('selected', idx === index);
+      });
+    }
+
+    function populateFileList(items) {
+      fileListEl.innerHTML = '';
+      items.forEach((item, index) => {
+        const pill = document.createElement('button');
+        pill.type = 'button';
+        pill.className = 'file-pill' + (index === activeIndex ? ' selected' : '');
+        pill.textContent = item.displayName;
+        pill.addEventListener('click', () => {
+          renderSummary(index);
+        });
+        fileListEl.appendChild(pill);
+      });
+    }
+
+    function handleParsedResults(results) {
+      if (!Array.isArray(results) || results.length === 0) {
+        resetState();
+        return;
+      }
+      parsedSummaries = results;
+      activeIndex = 0;
+      populateFileList(parsedSummaries);
+      renderSummary(0);
+    }
+
+    function readFileAsText(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(reader.error || new Error('Failed to read file.'));
+        reader.readAsText(file);
+      });
+    }
+
+    async function processFiles(fileList) {
+      resetState();
+      clearError();
+      if (!fileList || fileList.length === 0) {
+        return;
+      }
+      try {
+        const promises = Array.from(fileList).map(async (file) => {
+          const text = await readFileAsText(file);
+          let parsed;
+          try {
+            parsed = JSON.parse(text);
+          } catch (err) {
+            throw new Error(`Failed to parse "${file.name}": ${err.message}`);
+          }
+          const summary = buildSummary(parsed, file.name);
+          return {
+            ...summary,
+            displayName: file.name
+          };
+        });
+        const results = await Promise.all(promises);
+        handleParsedResults(results);
+      } catch (err) {
+        resetState();
+        showError(err.message || 'Unable to parse the provided files.');
+      }
+    }
+
+    fileInput.addEventListener('change', (event) => {
+      const files = event.target.files;
+      processFiles(files);
+    });
+
+    dropZone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (event) => {
+      event.preventDefault();
+      dropZone.classList.remove('dragover');
+      const files = event.dataTransfer.files;
+      fileInput.files = files;
+      processFiles(files);
+    });
+
+    dropZone.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    dropZone.addEventListener('keypress', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        fileInput.click();
+      }
+    });
+
+    copyButton.addEventListener('click', async () => {
+      if (activeIndex < 0) return;
+      try {
+        await navigator.clipboard.writeText(parsedSummaries[activeIndex].text);
+        copyButton.textContent = 'Copied!';
+        setTimeout(() => {
+          copyButton.textContent = 'Copy to clipboard';
+        }, 1800);
+      } catch (err) {
+        showError('Unable to copy to clipboard.');
+      }
+    });
+
+    downloadButton.addEventListener('click', () => {
+      if (activeIndex < 0) return;
+      const summary = parsedSummaries[activeIndex];
+      const blob = new Blob([summary.text], { type: 'text/plain' });
+      const filename = `FortiEDR_Summary_${summary.eventId || 'output'}.txt`;
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+    });
+
+    testButton.addEventListener('click', () => {
+      clearError();
+      const sampleData = {
+        EventAggId: 149038866,
+        Application: 'C:/Program Files/LG/LG Power Manager.exe',
+        CollectorGroup: 'Default',
+        HostName: 'RHAVEMAN-GRAM11',
+        LoggedUsers: [{ Name: 'DOMAIN\\rhaveman' }],
+        AppVendor: '',
+        Alerts: [
+          {
+            MainApp: {
+              Executable: 'C:/Program Files/LG/LG Power Manager.exe',
+              Vendor: 'LG Electronics',
+              CommandLine: '"C:/Program Files/LG/LG Power Manager.exe" /start'
+            }
+          }
+        ],
+        AppDetails: {
+          Executable: 'C:/Program Files/LG/LG Power Manager.exe',
+          CommandLine: ''
+        },
+        IsSigned: true,
+        SigningStatus: 'Signed',
+        AutomationData: {
+          classificationList: [
+            { title: 'ClassificationGood', date: '2024-02-20T10:00:00Z' }
+          ]
+        },
+        informationBlock: {
+          items: [
+            {
+              key: 'hash',
+              value: 'https://www.virustotal.com/gui/file/sample'
+            }
+          ]
+        },
+        AuxProcessName: 'WMI SERVICE ACCESS',
+        StackInfos: [
+          {
+            StackType: 'SERVICE ACCESS',
+            CommonAdditionalInfo: [
+              {
+                Type: 16,
+                ProcessOwner: 'DOMAIN\\rhaveman'
+              }
+            ]
+          }
+        ]
+      };
+
+      const summary = buildSummary(sampleData, 'Sample');
+      parsedSummaries = [
+        {
+          ...summary,
+          displayName: 'Sample Incident'
+        }
+      ];
+      activeIndex = 0;
+      populateFileList(parsedSummaries);
+      renderSummary(0);
+    });
+  </script>
 </body>
 </html>
