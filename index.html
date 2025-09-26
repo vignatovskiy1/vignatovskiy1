@@ -7,25 +7,34 @@
   <style>
     :root {
       color-scheme: light dark;
+      --bg: #f5f6f8;
+      --fg: #1f2933;
+      --card: #ffffff;
+      --accent: #2563eb;
+      --muted: #4b5563;
+      --border: rgba(15, 23, 42, 0.12);
       font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-      background-color: #f4f5f7;
-      color: #1f2933;
+      line-height: 1.6;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        background-color: #0f172a;
-        color: #e2e8f0;
+        --bg: #0f172a;
+        --fg: #e2e8f0;
+        --card: rgba(15, 23, 42, 0.9);
+        --muted: #94a3b8;
+        --border: rgba(148, 163, 184, 0.2);
       }
     }
 
     body {
       margin: 0;
-      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
       display: flex;
-      align-items: center;
       justify-content: center;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1rem;
+      min-height: 100vh;
     }
 
     main {
@@ -33,646 +42,554 @@
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.9);
+      background: var(--card);
       border-radius: 18px;
-      padding: 2rem;
-      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
-      backdrop-filter: blur(4px);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .card {
-        background: rgba(15, 23, 42, 0.85);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-      }
+      padding: clamp(1.5rem, 2vw + 1rem, 2.75rem);
+      box-shadow: 0 22px 65px rgba(15, 23, 42, 0.12);
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 1.75rem;
     }
 
     h1 {
-      margin-top: 0;
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      margin: 0;
+      font-size: clamp(1.8rem, 2.5vw + 1.2rem, 2.6rem);
+      letter-spacing: -0.01em;
     }
 
-    .uploader {
-      display: grid;
-      gap: 1.5rem;
-      margin-block: 1.5rem;
+    p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 60ch;
     }
 
-    .drop-zone {
-      border: 2px dashed rgba(59, 130, 246, 0.6);
-      border-radius: 14px;
-      padding: 2rem;
-      text-align: center;
-      transition: border-color 0.2s ease, background-color 0.2s ease;
-      cursor: pointer;
-    }
-
-    .drop-zone.dragover {
-      border-color: rgb(37, 99, 235);
-      background: rgba(37, 99, 235, 0.08);
-    }
-
-    .file-input {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    input[type="file"] {
+    label {
+      font-weight: 600;
       display: inline-block;
+      margin-bottom: 0.5rem;
     }
 
-    .file-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .file-pill {
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(59, 130, 246, 0.15);
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 1rem;
+      font: 1rem/1.5 "JetBrains Mono", "Fira Code", monospace;
+      background: rgba(15, 23, 42, 0.04);
       color: inherit;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-      border: 1px solid transparent;
-      font-size: 0.95rem;
     }
 
-    .file-pill:hover,
-    .file-pill.selected {
-      background: rgba(37, 99, 235, 0.2);
-      border-color: rgba(37, 99, 235, 0.35);
+    textarea:focus {
+      outline: 3px solid rgba(37, 99, 235, 0.25);
+      border-color: rgba(37, 99, 235, 0.45);
     }
 
-    .actions {
+    .controls {
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem;
     }
 
     button {
-      padding: 0.55rem 1.2rem;
-      border-radius: 10px;
       border: none;
-      cursor: pointer;
+      border-radius: 999px;
+      padding: 0.65rem 1.4rem;
       font-weight: 600;
       font-size: 0.95rem;
-      background: rgb(37, 99, 235);
-      color: white;
-      transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.25);
     }
 
     button.secondary {
-      background: rgba(15, 23, 42, 0.08);
+      background: rgba(148, 163, 184, 0.18);
       color: inherit;
     }
 
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      box-shadow: none;
+    }
+
+    button:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 28px rgba(15, 23, 42, 0.18);
+    }
+
+    #message {
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .results {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .event-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      background: rgba(15, 23, 42, 0.04);
+    }
+
     @media (prefers-color-scheme: dark) {
-      button.secondary {
-        background: rgba(148, 163, 184, 0.2);
+      .event-card {
+        background: rgba(148, 163, 184, 0.08);
       }
     }
 
-    button:hover:not(:disabled) {
-      transform: translateY(-1px);
+    .event-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .event-title {
+      font-weight: 700;
+    }
+
+    .event-actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .event-actions button {
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      border-radius: 10px;
     }
 
     pre {
-      background: rgba(15, 23, 42, 0.85);
-      color: #e2e8f0;
+      margin: 0;
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.25rem;
+      background: #0f172a;
+      color: #e2e8f0;
       overflow-x: auto;
-      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      font-size: 0.95rem;
+      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, monospace;
+      font-size: 0.92rem;
       line-height: 1.6;
-      min-height: 320px;
-      white-space: pre;
     }
 
     @media (prefers-color-scheme: light) {
       pre {
         background: #10172a;
+        color: #f8fafc;
       }
     }
 
-    .error {
-      margin-top: 1rem;
-      padding: 1rem 1.25rem;
-      border-radius: 12px;
-      background: rgba(220, 38, 38, 0.15);
-      color: #b91c1c;
-      font-weight: 600;
-      display: none;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .error {
-        background: rgba(248, 113, 113, 0.12);
-        color: #fca5a5;
-      }
-    }
-
-    .footer-note {
-      font-size: 0.85rem;
-      color: rgba(15, 23, 42, 0.65);
-      margin-top: 1.5rem;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      .footer-note {
-        color: rgba(226, 232, 240, 0.6);
-      }
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      border: 0;
     }
   </style>
 </head>
 <body>
   <main>
-    <section class="card">
-      <h1>FortiEDR Incident Summary Formatter</h1>
-      <p>Upload one or more FortiEDR JSON files to generate an aligned incident summary that mirrors the required layout.</p>
-
-      <div class="uploader" id="uploader">
-        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload FortiEDR JSON files">
-          <div class="file-input">
-            <strong>Click to choose or drag &amp; drop .json files</strong>
-            <input id="fileInput" type="file" accept="application/json,.json" multiple>
-          </div>
-        </div>
-
-        <div class="file-list" id="fileList" aria-live="polite"></div>
-
-        <div class="actions">
-          <button id="copyButton" disabled>Copy to clipboard</button>
-          <button id="downloadButton" disabled>Download .txt</button>
-          <button class="secondary" id="testButton" type="button">Load Test Data</button>
-        </div>
+    <section class="card" aria-labelledby="page-title">
+      <div>
+        <h1 id="page-title">FortiEDR Incident Summary Formatter</h1>
+        <p>Paste FortiEDR events, then format them into analyst-ready incident summaries with perfectly aligned layout.</p>
       </div>
 
-      <pre id="output" aria-live="polite"></pre>
-      <div class="error" id="error" role="alert"></div>
+      <div>
+        <label for="rawInput">Raw FortiEDR events</label>
+        <textarea id="rawInput" placeholder="Paste FortiEDR events here…" aria-describedby="input-help"></textarea>
+        <p id="input-help" class="sr-only">Use the Format Events button to parse the pasted events into summaries.</p>
+      </div>
 
-      <p class="footer-note">The formatted summary keeps a fixed monospace layout with padded labels for quick analyst handoff.</p>
+      <div class="controls" role="group" aria-label="Formatting controls">
+        <button id="formatButton" class="primary" type="button">Format Events</button>
+        <button id="copyAllButton" class="secondary" type="button" disabled>Copy All</button>
+        <button id="clearButton" class="secondary" type="button">Clear</button>
+      </div>
+
+      <div id="message" role="status" aria-live="polite"></div>
+
+      <div id="results" class="results" aria-live="polite"></div>
     </section>
   </main>
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const dropZone = document.getElementById('dropZone');
-    const fileListEl = document.getElementById('fileList');
-    const outputEl = document.getElementById('output');
-    const copyButton = document.getElementById('copyButton');
-    const downloadButton = document.getElementById('downloadButton');
-    const errorEl = document.getElementById('error');
-    const testButton = document.getElementById('testButton');
+    const rawInput = document.getElementById('rawInput');
+    const formatButton = document.getElementById('formatButton');
+    const copyAllButton = document.getElementById('copyAllButton');
+    const clearButton = document.getElementById('clearButton');
+    const resultsEl = document.getElementById('results');
+    const messageEl = document.getElementById('message');
 
-    let parsedSummaries = [];
-    let activeIndex = -1;
+    let formattedEvents = [];
 
-    function resetState() {
-      parsedSummaries = [];
-      activeIndex = -1;
-      outputEl.textContent = '';
-      copyButton.disabled = true;
-      downloadButton.disabled = true;
-      fileListEl.innerHTML = '';
+    function normalizeLineEndings(text) {
+      return text.replace(/\r\n?/g, '\n');
     }
 
-    function showError(message) {
-      errorEl.textContent = message;
-      errorEl.style.display = 'block';
+    function hasContent(text) {
+      return /\S/.test(text);
     }
 
-    function clearError() {
-      errorEl.textContent = '';
-      errorEl.style.display = 'none';
+    function cleanValue(raw) {
+      if (typeof raw !== 'string') return '';
+      return raw.replace(/^[ \t]+/, '').replace(/[ \t]+$/, '');
     }
 
-    function padLabel(label) {
-      return (label + ':').padEnd(26, ' ');
-    }
-
-    function getBasename(value) {
-      if (typeof value !== 'string' || !value.trim()) {
-        return '';
+    function extractTableValue(lines, label) {
+      const pattern = new RegExp('^' + label + '\\b', 'i');
+      for (let i = 0; i < lines.length; i++) {
+        if (pattern.test(lines[i])) {
+          const after = lines[i].replace(pattern, '');
+          const value = cleanValue(after.replace(/^[\s|:;-]+/, ''));
+          if (value) return value;
+          if (i + 1 < lines.length) {
+            const next = cleanValue(lines[i + 1]);
+            if (next) return next;
+          }
+        }
       }
-      const cleaned = value.trim();
-      const parts = cleaned.split(/[/\\]/);
-      return parts.pop() || cleaned;
+      return '';
     }
 
     function stripDomain(user) {
-      if (typeof user !== 'string') {
-        return '';
-      }
-      const trimmed = user.trim();
-      if (!trimmed) return '';
-      const separators = ['\\', '/'];
-      for (const sep of separators) {
-        if (trimmed.includes(sep)) {
-          const bits = trimmed.split(sep);
-          return bits[bits.length - 1];
-        }
-      }
-      return trimmed;
+      if (!user) return '';
+      const raw = user.trim();
+      if (!raw) return '';
+      const parts = raw.split(/\\|\//);
+      return parts[parts.length - 1];
     }
 
-    function findVirusTotalUrl(node) {
-      const visited = new Set();
-
-      function traverse(value) {
-        if (value === null || value === undefined) return null;
-        if (visited.has(value)) return null;
-        if (typeof value === 'string') {
-          const match = value.match(/https?:\/\/[^\s"']*virustotal[^\s"']*/i);
-          return match ? match[0] : null;
-        }
-        if (typeof value === 'object') {
-          visited.add(value);
-          if (Array.isArray(value)) {
-            for (const item of value) {
-              const found = traverse(item);
-              if (found) return found;
-            }
-          } else {
-            for (const key of Object.keys(value)) {
-              const found = traverse(value[key]);
-              if (found) return found;
-            }
+    function extractEventIdAndProcess(lines) {
+      let eventId = '';
+      let processName = '';
+      for (const line of lines) {
+        const eventMatch = line.match(/\bEvent\s+(\d{6,})\b/i);
+        if (eventMatch && !eventId) {
+          eventId = eventMatch[1];
+          const remainder = line.slice(eventMatch.index + eventMatch[0].length);
+          const processMatch = remainder.match(/([A-Za-z0-9_.-]+\.(?:exe|dll|msi|bat|cmd|ps1|scr|com))/i);
+          if (processMatch) {
+            processName = processMatch[1];
           }
         }
-        return null;
+        if (eventId && processName) break;
       }
-
-      return traverse(node);
+      return { eventId, processName };
     }
 
-    function selectLatestClassification(list) {
-      if (!Array.isArray(list) || list.length === 0) return null;
-      let best = null;
-      let bestTime = Number.NEGATIVE_INFINITY;
-      let fallback = null;
-      list.forEach((entry, index) => {
-        if (!entry || typeof entry !== 'object') return;
-        const possibleDate = entry.date || entry.timestamp || entry.time || entry.updated || entry.created;
-        if (possibleDate) {
-          const parsed = Date.parse(possibleDate);
-          if (!Number.isNaN(parsed) && parsed >= bestTime) {
-            bestTime = parsed;
-            best = entry;
+    function extractProcessFallback(text) {
+      const tableMatch = text.match(/^PROCESS\s*[|:;-]*\s*([^\r\n]+)/im);
+      if (tableMatch) {
+        const cleaned = cleanValue(tableMatch[1]);
+        if (cleaned) return cleaned;
+      }
+      const loneExe = text.match(/^\s*([\w.-]+\.exe)\s*$/im);
+      return loneExe ? loneExe[1] : '';
+    }
+
+    function extractCollectorGroup(text, lines) {
+      const triggered = text.match(/Triggered Rules[^\r\n]*?([A-Za-z0-9][A-Za-z0-9 _-]{0,40})/i);
+      if (triggered) {
+        const candidate = cleanValue(triggered[1]).split(/[:\-]/)[0].trim();
+        if (candidate) return candidate;
+      }
+      for (const line of lines) {
+        if (/Collector Group/i.test(line)) {
+          if (/Default/i.test(line)) {
+            return 'Default';
+          }
+          const value = cleanValue(line.split(/Collector Group/i)[1]);
+          if (value) return value;
+        }
+      }
+      for (const line of lines) {
+        if (/Default/i.test(line) && /Collector/i.test(line)) {
+          return 'Default';
+        }
+      }
+      return 'Default';
+    }
+
+    function extractLineValue(text, label, allowNextLine = false) {
+      const regex = new RegExp('^' + label + '\\s*:?[ \\t]*([^\\r\\n]*)$', 'im');
+      const match = text.match(regex);
+      if (!match) return '';
+      let value = match[1];
+      if (value === undefined) value = '';
+      if (!hasContent(value) && allowNextLine) {
+        const normalized = normalizeLineEndings(text);
+        const lines = normalized.split('\n');
+        const labelPattern = new RegExp('^' + label + '\\s*:?','i');
+        let index = -1;
+        for (let i = 0; i < lines.length; i++) {
+          if (labelPattern.test(lines[i])) {
+            index = i;
+            break;
           }
         }
-        if (!fallback) {
-          fallback = entry;
+        if (index > -1) {
+          for (let i = index + 1; i < lines.length; i++) {
+            const candidate = lines[i];
+            if (!hasContent(candidate)) continue;
+            const trimmed = candidate.trim();
+            if (/^[A-Z][A-Za-z0-9 ()/\-]{1,40}:/.test(trimmed)) {
+              break;
+            }
+            const indicators = ['Event', 'Device', 'Process', 'Target', 'Command Line', 'User', 'Company', 'Certificate', 'Classification', 'Collector', 'Triggered', 'Destination', 'DESTINATION', 'Action', 'History', 'Details', 'Policy', 'Rule'];
+            if (indicators.some(indicator => trimmed.toLowerCase().startsWith(indicator.toLowerCase()))) {
+              break;
+            }
+            value = candidate;
+            break;
+          }
         }
-      });
-      return best || fallback;
-    }
-
-    function mapClassification(value) {
-      if (!value || typeof value !== 'string') return 'N/A';
-      const trimmed = value.trim();
-      if (!trimmed) return 'N/A';
-      const lower = trimmed.toLowerCase();
-      if (lower === 'classificationgood' || lower === 'safe') return 'Safe';
-      if (lower === 'classificationinconclusive' || lower === 'inconclusive') return 'Inconclusive';
-      if (trimmed.toLowerCase().startsWith('classification')) {
-        const rest = trimmed.slice('classification'.length);
-        if (!rest) return 'N/A';
-        return rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
       }
-      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+      return cleanValue(value);
     }
 
-    function resolveClassification(data) {
-      const automationList = data?.AutomationData?.classificationList;
-      if (Array.isArray(automationList) && automationList.length) {
-        const entry = selectLatestClassification(automationList);
-        const title = entry?.title || entry?.name || '';
-        const mapped = mapClassification(title);
-        if (mapped !== 'N/A') return mapped;
+    function extractClassification(text) {
+      const classifications = [];
+      const regex = /^Classification(?: Details| History)?[^:\n]*[:\-]?\s*(.+)$/gim;
+      let match;
+      while ((match = regex.exec(text)) !== null) {
+        const entry = cleanValue(match[1]);
+        if (entry) {
+          const parts = entry.split(' - ');
+          classifications.push(parts.pop());
+        }
       }
-      const fallback = data?.EventClassification;
-      return mapClassification(typeof fallback === 'string' ? fallback : '');
+      if (classifications.length) {
+        return classifications[classifications.length - 1];
+      }
+      const statusRegex = /(Likely Safe|Safe|Inconclusive|Malicious|Likely Malicious|Suspicious|Unsafe|Unknown|Malicious Attempt)/gi;
+      const statuses = [];
+      let statusMatch;
+      while ((statusMatch = statusRegex.exec(text)) !== null) {
+        statuses.push(statusMatch[1]);
+      }
+      return statuses.length ? statuses[statuses.length - 1] : 'Unknown';
     }
 
-    function resolveCompany(data) {
-      const primary = typeof data?.AppVendor === 'string' ? data.AppVendor.trim() : '';
-      if (primary) return primary;
-      const fallback = typeof data?.Alerts?.[0]?.MainApp?.Vendor === 'string' ? data.Alerts[0].MainApp.Vendor.trim() : '';
-      return fallback || 'N/A';
+    function extractCertification(text) {
+      const certLine = extractLineValue(text, 'Certificate');
+      if (certLine) return certLine;
+      const signedMatch = text.match(/\b(Signed|Unsigned|Not Signed|No Signed)\b/i);
+      return signedMatch ? signedMatch[1].replace(/Not/i, 'Unsigned') : 'N/A';
     }
 
-    function resolveCertification(data) {
-      const signingStatus = typeof data?.SigningStatus === 'string' ? data.SigningStatus.trim().toLowerCase() : '';
-      const isSigned = data?.IsSigned === true || signingStatus === 'signed';
-      if (isSigned) return 'Signed';
-      if (data?.IsSigned === false || (signingStatus && signingStatus !== 'signed')) {
-        return 'Unsigned';
+    function extractAdditionalInfo(text, lines) {
+      for (let i = 0; i < lines.length; i++) {
+        if (/^DESTINATION\b/i.test(lines[i].trim())) {
+          const after = cleanValue(lines[i].replace(/^DESTINATION\b/i, '').replace(/^[\s|:;-]+/, ''));
+          if (after) return after;
+          for (let j = i + 1; j < Math.min(lines.length, i + 3); j++) {
+            const next = cleanValue(lines[j]);
+            if (next) return next;
+          }
+        }
+      }
+      const actionMatch = text.match(/\b(File Rename Attempt|Service Access|Process Access|File Access|Registry Access|Network Access|File Modification Attempt|File Creation Attempt|Execution Attempt|PowerShell Execution)\b/i);
+      if (actionMatch) return actionMatch[1];
+      const triggeredLineIndex = lines.findIndex(line => /Triggered Rules/i.test(line));
+      if (triggeredLineIndex > -1) {
+        for (let i = triggeredLineIndex + 1; i < lines.length; i++) {
+          const candidate = cleanValue(lines[i]);
+          if (candidate) {
+            return candidate.split(/[:\-]/)[0].trim();
+          }
+        }
       }
       return 'N/A';
     }
 
-    function resolveLoggedInUser(data) {
-      const loggedUser = data?.LoggedUsers?.[0]?.Name;
-      const cleanedLoggedUser = stripDomain(loggedUser);
-      if (cleanedLoggedUser) return cleanedLoggedUser;
-
-      const stackInfo = data?.StackInfos?.[0];
-      const extras = stackInfo?.CommonAdditionalInfo;
-      if (Array.isArray(extras)) {
-        const ownerInfo = extras.find(item => item && (item.Type === 16 || item.type === 16));
-        if (ownerInfo) {
-          const owner = stripDomain(ownerInfo.ProcessOwner || ownerInfo.ProcessEffectiveOwner || ownerInfo.Value || '');
-          if (owner) return owner;
-        }
-      }
-      return 'N/A';
-    }
-
-    function resolveAdditionalInfo(data) {
-      const stackInfo = data?.StackInfos?.[0];
-      const stackType = typeof stackInfo?.StackType === 'string' ? stackInfo.StackType.trim() : '';
-      if (stackType && stackType.toUpperCase().includes('SERVICE')) {
-        return 'Service Access';
-      }
-      return stackType || 'N/A';
-    }
-
-    function resolveTarget(data) {
-      const primary = typeof data?.AuxProcessName === 'string' ? data.AuxProcessName.trim() : '';
-      if (primary) return primary;
-      const stackInfo = data?.StackInfos?.[0];
-      const fromStack = typeof stackInfo?.AuxProcessName === 'string' ? stackInfo.AuxProcessName.trim() : '';
-      if (fromStack) return fromStack;
-      const stackType = typeof stackInfo?.StackType === 'string' ? stackInfo.StackType.trim() : '';
-      return stackType || 'N/A';
-    }
-
-    function resolveCommandLine(data) {
-      const primary = typeof data?.AppDetails?.CommandLine === 'string' ? data.AppDetails.CommandLine.trim() : '';
-      if (primary) return primary;
-      const fallback = typeof data?.Alerts?.[0]?.MainApp?.CommandLine === 'string' ? data.Alerts[0].MainApp.CommandLine.trim() : '';
-      return fallback || 'N/A';
-    }
-
-    function resolveProcess(data) {
-      const options = [
-        getBasename(data?.Application),
-        getBasename(data?.AppDetails?.Executable),
-        getBasename(data?.Alerts?.[0]?.MainApp?.Executable)
-      ];
-      const found = options.find(Boolean);
-      return found || 'N/A';
-    }
-
-    function buildSummary(data, sourceLabel) {
-      const eventId = data?.EventAggId ?? data?.EventId ?? data?.EventUniqueId ?? 'N/A';
-      const lines = [
-        padLabel('Event ID') + (eventId || 'N/A'),
-        padLabel('Process') + resolveProcess(data),
-        padLabel('Collector Group') + (data?.CollectorGroup || 'N/A'),
-        padLabel('Device') + (data?.HostName || 'N/A'),
-        padLabel('Logged-in User') + resolveLoggedInUser(data),
-        padLabel('Company') + resolveCompany(data),
-        padLabel('Certification') + resolveCertification(data),
-        padLabel('Classification') + resolveClassification(data),
-        padLabel('Virus Total link') + (findVirusTotalUrl(data) || 'N/A'),
-        '',
-        '',
-        padLabel('Target') + resolveTarget(data),
-        '',
-        '',
-        padLabel('Command Line') + resolveCommandLine(data),
-        '',
-        '',
-        padLabel('Additional information') + resolveAdditionalInfo(data),
-        '',
-        '',
-        padLabel('Tech notes'),
-        '',
-        '',
-        'Next Steps:',
-        'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
-        '-----------------------------------------------------------------------------------------------'
-      ];
+    function parseEvent(chunk) {
+      const normalized = normalizeLineEndings(chunk);
+      const lines = normalized.split('\n');
+      const { eventId, processName } = extractEventIdAndProcess(lines);
+      const process = processName || extractProcessFallback(normalized) || 'N/A';
+      const collectorGroup = extractCollectorGroup(normalized, lines) || 'Default';
+      const device = extractTableValue(lines, 'DEVICE') || 'N/A';
+      const userRaw = extractLineValue(normalized, 'User');
+      const user = stripDomain(userRaw) || 'N/A';
+      const company = extractLineValue(normalized, 'Company') || 'N/A';
+      const certification = extractCertification(normalized);
+      const classification = extractClassification(normalized);
+      const targetLine = extractLineValue(normalized, 'Target', true) || 'N/A';
+      const commandLineRaw = extractLineValue(normalized, 'Command Line', true);
+      const commandLine = hasContent(commandLineRaw) ? commandLineRaw : 'N/A';
+      const additionalInfo = extractAdditionalInfo(normalized, lines);
 
       return {
-        text: lines.join('\n'),
-        eventId: eventId && eventId !== 'N/A' ? eventId : sourceLabel
+        eventId: eventId || 'N/A',
+        process,
+        collectorGroup,
+        device,
+        user,
+        company,
+        certification,
+        classification: classification || 'Unknown',
+        target: targetLine,
+        commandLine,
+        additionalInfo
       };
     }
 
-    function renderSummary(index) {
-      if (index < 0 || index >= parsedSummaries.length) {
-        outputEl.textContent = '';
-        copyButton.disabled = true;
-        downloadButton.disabled = true;
-        activeIndex = -1;
-        return;
-      }
-      activeIndex = index;
-      const summary = parsedSummaries[index];
-      outputEl.textContent = summary.text;
-      copyButton.disabled = false;
-      downloadButton.disabled = false;
+    function renderEvent(event, index) {
+      const template = [
+        `Event ID:                  ${event.eventId}`,
+        `Process:                   ${event.process}`,
+        `Collector Group:      ${event.collectorGroup}`,
+        `Device:                     ${event.device}`,
+        `Logged-in User:       ${event.user}`,
+        `Company:                ${event.company}`,
+        `Certification:            ${event.certification}`,
+        `Classification:           ${event.classification}`,
+        `Virus Total link:     N/A`,
+        '',
+        '',
+        `Target: ${event.target}`,
+        '',
+        '',
+        `Command Line: ${event.commandLine}`,
+        '',
+        '',
+        `Additional information: ${event.additionalInfo}`,
+        '',
+        '',
+        `Tech notes: `,
+        '',
+        '',
+        `Next Steps:`,
+        `Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.`,
+        `-----------------------------------------------------------------------------------------------`
+      ].join('\n');
 
-      Array.from(fileListEl.children).forEach((child, idx) => {
-        child.classList.toggle('selected', idx === index);
-      });
+      const wrapper = document.createElement('article');
+      wrapper.className = 'event-card';
+
+      const header = document.createElement('div');
+      header.className = 'event-header';
+
+      const title = document.createElement('span');
+      title.className = 'event-title';
+      title.textContent = `Event ${index + 1}`;
+
+      const actions = document.createElement('div');
+      actions.className = 'event-actions';
+
+      const copyButton = document.createElement('button');
+      copyButton.type = 'button';
+      copyButton.className = 'secondary';
+      copyButton.textContent = 'Copy';
+      copyButton.addEventListener('click', () => copyToClipboard(template));
+
+      actions.appendChild(copyButton);
+      header.append(title, actions);
+
+      const pre = document.createElement('pre');
+      pre.textContent = template;
+
+      wrapper.append(header, pre);
+      resultsEl.appendChild(wrapper);
+
+      return template;
     }
 
-    function populateFileList(items) {
-      fileListEl.innerHTML = '';
-      items.forEach((item, index) => {
-        const pill = document.createElement('button');
-        pill.type = 'button';
-        pill.className = 'file-pill' + (index === activeIndex ? ' selected' : '');
-        pill.textContent = item.displayName;
-        pill.addEventListener('click', () => {
-          renderSummary(index);
-        });
-        fileListEl.appendChild(pill);
-      });
-    }
-
-    function handleParsedResults(results) {
-      if (!Array.isArray(results) || results.length === 0) {
-        resetState();
-        return;
-      }
-      parsedSummaries = results;
-      activeIndex = 0;
-      populateFileList(parsedSummaries);
-      renderSummary(0);
-    }
-
-    function readFileAsText(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error || new Error('Failed to read file.'));
-        reader.readAsText(file);
-      });
-    }
-
-    async function processFiles(fileList) {
-      resetState();
-      clearError();
-      if (!fileList || fileList.length === 0) {
-        return;
-      }
+    async function copyToClipboard(text) {
       try {
-        const promises = Array.from(fileList).map(async (file) => {
-          const text = await readFileAsText(file);
-          let parsed;
-          try {
-            parsed = JSON.parse(text);
-          } catch (err) {
-            throw new Error(`Failed to parse "${file.name}": ${err.message}`);
-          }
-          const summary = buildSummary(parsed, file.name);
-          return {
-            ...summary,
-            displayName: file.name
-          };
-        });
-        const results = await Promise.all(promises);
-        handleParsedResults(results);
-      } catch (err) {
-        resetState();
-        showError(err.message || 'Unable to parse the provided files.');
-      }
-    }
-
-    fileInput.addEventListener('change', (event) => {
-      const files = event.target.files;
-      processFiles(files);
-    });
-
-    dropZone.addEventListener('dragover', (event) => {
-      event.preventDefault();
-      dropZone.classList.add('dragover');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
-    });
-
-    dropZone.addEventListener('drop', (event) => {
-      event.preventDefault();
-      dropZone.classList.remove('dragover');
-      const files = event.dataTransfer.files;
-      fileInput.files = files;
-      processFiles(files);
-    });
-
-    dropZone.addEventListener('click', () => {
-      fileInput.click();
-    });
-
-    dropZone.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        fileInput.click();
-      }
-    });
-
-    copyButton.addEventListener('click', async () => {
-      if (activeIndex < 0) return;
-      try {
-        await navigator.clipboard.writeText(parsedSummaries[activeIndex].text);
-        copyButton.textContent = 'Copied!';
-        setTimeout(() => {
-          copyButton.textContent = 'Copy to clipboard';
-        }, 1800);
-      } catch (err) {
-        showError('Unable to copy to clipboard.');
-      }
-    });
-
-    downloadButton.addEventListener('click', () => {
-      if (activeIndex < 0) return;
-      const summary = parsedSummaries[activeIndex];
-      const blob = new Blob([summary.text], { type: 'text/plain' });
-      const filename = `FortiEDR_Summary_${summary.eventId || 'output'}.txt`;
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    });
-
-    testButton.addEventListener('click', () => {
-      clearError();
-      const sampleData = {
-        EventAggId: 149038866,
-        Application: 'C:/Program Files/LG/LG Power Manager.exe',
-        CollectorGroup: 'Default',
-        HostName: 'RHAVEMAN-GRAM11',
-        LoggedUsers: [{ Name: 'DOMAIN\\rhaveman' }],
-        AppVendor: '',
-        Alerts: [
-          {
-            MainApp: {
-              Executable: 'C:/Program Files/LG/LG Power Manager.exe',
-              Vendor: 'LG Electronics',
-              CommandLine: '"C:/Program Files/LG/LG Power Manager.exe" /start'
-            }
-          }
-        ],
-        AppDetails: {
-          Executable: 'C:/Program Files/LG/LG Power Manager.exe',
-          CommandLine: ''
-        },
-        IsSigned: true,
-        SigningStatus: 'Signed',
-        AutomationData: {
-          classificationList: [
-            { title: 'ClassificationGood', date: '2024-02-20T10:00:00Z' }
-          ]
-        },
-        informationBlock: {
-          items: [
-            {
-              key: 'hash',
-              value: 'https://www.virustotal.com/gui/file/sample'
-            }
-          ]
-        },
-        AuxProcessName: 'WMI SERVICE ACCESS',
-        StackInfos: [
-          {
-            StackType: 'SERVICE ACCESS',
-            CommonAdditionalInfo: [
-              {
-                Type: 16,
-                ProcessOwner: 'DOMAIN\\rhaveman'
-              }
-            ]
-          }
-        ]
-      };
-
-      const summary = buildSummary(sampleData, 'Sample');
-      parsedSummaries = [
-        {
-          ...summary,
-          displayName: 'Sample Incident'
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'absolute';
+          textarea.style.left = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
         }
-      ];
-      activeIndex = 0;
-      populateFileList(parsedSummaries);
-      renderSummary(0);
-    });
+        messageEl.textContent = 'Copied to clipboard.';
+      } catch (error) {
+        console.error('Clipboard copy failed', error);
+        messageEl.textContent = 'Unable to copy to clipboard.';
+      }
+    }
+
+    function formatEvents() {
+      const rawText = rawInput.value;
+      if (!hasContent(rawText)) {
+        messageEl.textContent = 'Please paste FortiEDR events first.';
+        resultsEl.innerHTML = '';
+        formattedEvents = [];
+        copyAllButton.disabled = true;
+        return;
+      }
+
+      const normalized = normalizeLineEndings(rawText);
+      const parts = normalized.split(/Event GraphAutomated Analysis/g);
+      const events = [];
+
+      for (const part of parts) {
+        if (!hasContent(part)) continue;
+        const event = parseEvent(part);
+        events.push(event);
+      }
+
+      resultsEl.innerHTML = '';
+      formattedEvents = [];
+
+      if (!events.length) {
+        messageEl.textContent = 'No events were detected. Check the delimiter and try again.';
+        copyAllButton.disabled = true;
+        return;
+      }
+
+      events.forEach((event, index) => {
+        const formatted = renderEvent(event, index);
+        formattedEvents.push(formatted);
+      });
+
+      messageEl.textContent = `${events.length} event${events.length === 1 ? '' : 's'} formatted.`;
+      copyAllButton.disabled = false;
+    }
+
+    function copyAll() {
+      if (!formattedEvents.length) return;
+      const joined = formattedEvents.join('\n');
+      copyToClipboard(joined);
+    }
+
+    function clearAll() {
+      rawInput.value = '';
+      resultsEl.innerHTML = '';
+      formattedEvents = [];
+      messageEl.textContent = '';
+      copyAllButton.disabled = true;
+      rawInput.focus();
+    }
+
+    formatButton.addEventListener('click', formatEvents);
+    copyAllButton.addEventListener('click', copyAll);
+    clearButton.addEventListener('click', clearAll);
   </script>
 </body>
 </html>
