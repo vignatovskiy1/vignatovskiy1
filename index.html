@@ -202,8 +202,8 @@
       <div class="uploader" id="uploader">
         <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload FortiEDR JSON files">
           <div class="file-input">
-            <strong>Click to choose or drag &amp; drop .json files</strong>
-            <input id="fileInput" type="file" accept="application/json,.json" multiple>
+            <strong>Click to choose or drag &amp; drop FortiEDR exports (.json or .txt)</strong>
+            <input id="fileInput" type="file" accept="application/json,.json,text/plain,.txt" multiple>
           </div>
         </div>
 
@@ -282,6 +282,59 @@
         }
       }
       return trimmed;
+    }
+
+    function safeField(value) {
+      if (typeof value !== 'string') return 'N/A';
+      const trimmed = value.trim();
+      return trimmed ? trimmed : 'N/A';
+    }
+
+    function buildSummaryFromFields(fields, fallbackId) {
+      const normalized = {
+        eventId: safeField(fields.eventId),
+        process: safeField(fields.process),
+        collectorGroup: safeField(fields.collectorGroup),
+        device: safeField(fields.device),
+        loggedInUser: safeField(fields.loggedInUser),
+        company: safeField(fields.company),
+        certification: safeField(fields.certification),
+        classification: safeField(fields.classification),
+        virusTotal: safeField(fields.virusTotal),
+        target: safeField(fields.target),
+        commandLine: safeField(fields.commandLine),
+        additionalInfo: safeField(fields.additionalInfo)
+      };
+
+      const lines = [
+        padLabel('Event ID') + normalized.eventId,
+        padLabel('Process') + normalized.process,
+        padLabel('Collector Group') + normalized.collectorGroup,
+        padLabel('Device') + normalized.device,
+        padLabel('Logged-in User') + normalized.loggedInUser,
+        padLabel('Company') + normalized.company,
+        padLabel('Certification') + normalized.certification,
+        padLabel('Classification') + normalized.classification,
+        padLabel('Virus Total link') + normalized.virusTotal,
+        '',
+        `Target: ${normalized.target}`,
+        '',
+        `Command Line: ${normalized.commandLine}`,
+        '',
+        `Additional information: ${normalized.additionalInfo}`,
+        '',
+        'Tech notes: ',
+        '',
+        'Next Steps:',
+        'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
+        '-----------------------------------------------------------------------------------------------'
+      ];
+
+      const displayEventId = normalized.eventId;
+      return {
+        text: lines.join('\n'),
+        eventId: displayEventId !== 'N/A' ? displayEventId : fallbackId
+      };
     }
 
     function findVirusTotalUrl(node) {
@@ -433,41 +486,218 @@
       return found || 'N/A';
     }
 
-    function buildSummary(data, sourceLabel) {
-      const eventId = data?.EventAggId ?? data?.EventId ?? data?.EventUniqueId ?? 'N/A';
-      const lines = [
-        padLabel('Event ID') + (eventId || 'N/A'),
-        padLabel('Process') + resolveProcess(data),
-        padLabel('Collector Group') + (data?.CollectorGroup || 'N/A'),
-        padLabel('Device') + (data?.HostName || 'N/A'),
-        padLabel('Logged-in User') + resolveLoggedInUser(data),
-        padLabel('Company') + resolveCompany(data),
-        padLabel('Certification') + resolveCertification(data),
-        padLabel('Classification') + resolveClassification(data),
-        padLabel('Virus Total link') + (findVirusTotalUrl(data) || 'N/A'),
-        '',
-        '',
-        padLabel('Target') + resolveTarget(data),
-        '',
-        '',
-        padLabel('Command Line') + resolveCommandLine(data),
-        '',
-        '',
-        padLabel('Additional information') + resolveAdditionalInfo(data),
-        '',
-        '',
-        padLabel('Tech notes'),
-        '',
-        '',
-        'Next Steps:',
-        'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
-        '-----------------------------------------------------------------------------------------------'
+    function buildSummaryFromJson(data, fallbackId) {
+      const fields = {
+        eventId: data?.EventAggId ?? data?.EventId ?? data?.EventUniqueId ?? 'N/A',
+        process: resolveProcess(data),
+        collectorGroup: data?.CollectorGroup || 'N/A',
+        device: data?.HostName || 'N/A',
+        loggedInUser: resolveLoggedInUser(data),
+        company: resolveCompany(data),
+        certification: resolveCertification(data),
+        classification: resolveClassification(data),
+        virusTotal: findVirusTotalUrl(data) || 'N/A',
+        target: resolveTarget(data),
+        commandLine: resolveCommandLine(data),
+        additionalInfo: resolveAdditionalInfo(data)
+      };
+
+      return buildSummaryFromFields(fields, fallbackId);
+    }
+
+    function substringRange(value, start, end) {
+      if (typeof value !== 'string') return '';
+      if (start >= value.length) return '';
+      const limit = Number.isFinite(end) ? Math.min(end, value.length) : value.length;
+      return value.slice(start, limit);
+    }
+
+    function parseSelectedTableFromLines(lines) {
+      if (!Array.isArray(lines)) return null;
+      for (let i = 0; i < lines.length; i++) {
+        if (!/^[\s-]*Selected[\s-]*$/i.test(lines[i]?.trim?.() || '')) continue;
+        let headerIndex = i + 1;
+        while (headerIndex < lines.length && !lines[headerIndex].trim()) {
+          headerIndex++;
+        }
+        if (headerIndex >= lines.length) return null;
+        const headerLine = lines[headerIndex];
+        if (!/PROCESS/i.test(headerLine) || !/DEVICE/i.test(headerLine)) continue;
+        const dataLines = [];
+        for (let j = headerIndex + 1; j < lines.length; j++) {
+          const row = lines[j];
+          if (!row || !row.trim()) break;
+          if (/^-+$/.test(row.trim())) continue;
+          if (/^[\s-]*Selected[\s-]*$/i.test(row.trim())) break;
+          dataLines.push(row);
+          if (dataLines.length >= 4) break;
+        }
+        if (!dataLines.length) continue;
+        const columns = ['PROCESS', 'DEVICE', 'CLASSIFICATION', 'DESTINATION'];
+        const positions = columns
+          .map(name => ({ name, index: headerLine.indexOf(name) }))
+          .filter(item => item.index >= 0)
+          .sort((a, b) => a.index - b.index);
+        if (!positions.length) continue;
+        const values = {};
+        positions.forEach((col, idx) => {
+          const start = col.index;
+          const end = idx + 1 < positions.length ? positions[idx + 1].index : Infinity;
+          const fragments = [];
+          dataLines.forEach(line => {
+            const fragment = substringRange(line, start, end).trim();
+            if (fragment) fragments.push(fragment);
+          });
+          values[col.name] = fragments.join(' ') || '';
+        });
+        return values;
+      }
+      return null;
+    }
+
+    function extractFieldValue(lines, label) {
+      if (!Array.isArray(lines)) return '';
+      const lowerLabel = label.toLowerCase();
+      const target = `${lowerLabel}:`;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (typeof line !== 'string') continue;
+        const lowerLine = line.toLowerCase();
+        const pos = lowerLine.indexOf(target);
+        if (pos !== -1) {
+          const remainder = line.slice(pos + target.length).trim();
+          if (remainder) return remainder;
+          for (let j = i + 1; j < lines.length; j++) {
+            const next = lines[j].trim();
+            if (!next) continue;
+            return next;
+          }
+          return '';
+        }
+      }
+      return '';
+    }
+
+    function normalizeCollectorGroup(value) {
+      if (!value) return '';
+      if (/^default collector group$/i.test(value.trim())) return 'Default';
+      return value.trim();
+    }
+
+    function parseCollectorGroupSection(lines) {
+      if (!Array.isArray(lines)) return '';
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (typeof line !== 'string') continue;
+        if (!line.toLowerCase().includes('collector groups')) continue;
+        for (let j = i + 1; j < lines.length; j++) {
+          const candidate = (lines[j] || '').trim();
+          if (!candidate) continue;
+          if (/^-+$/.test(candidate)) continue;
+          if (/collector groups/i.test(candidate)) break;
+          if (/^All groups$/i.test(candidate)) continue;
+          return normalizeCollectorGroup(candidate);
+        }
+      }
+      return '';
+    }
+
+    function parseCertificateValue(value) {
+      if (typeof value !== 'string') return '';
+      const trimmed = value.trim();
+      if (!trimmed) return '';
+      if (/unsigned/i.test(trimmed)) return 'Unsigned';
+      if (/signed/i.test(trimmed)) return 'Signed';
+      return trimmed;
+    }
+
+    function extractUppercaseAction(lines) {
+      if (!Array.isArray(lines)) return '';
+      for (const line of lines) {
+        if (typeof line !== 'string') continue;
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (trimmed.includes(':')) continue;
+        if (/^Selected$/i.test(trimmed)) continue;
+        if (/PROCESS/i.test(trimmed) && /DEVICE/i.test(trimmed)) continue;
+        if (/collector groups/i.test(trimmed)) continue;
+        if (/^Event\b/i.test(trimmed)) continue;
+        if (/^-+$/.test(trimmed)) continue;
+        if (/^[A-Z0-9 /_-]+$/.test(trimmed) && /[A-Z]/.test(trimmed)) {
+          return trimmed.replace(/\s+/g, ' ').trim();
+        }
+      }
+      return '';
+    }
+
+    function buildFieldsFromTextChunk(chunk) {
+      const normalized = chunk.replace(/\r/g, '');
+      const lines = normalized.split('\n');
+      const table = parseSelectedTableFromLines(lines) || {};
+      const eventIdMatch = normalized.match(/Event\s+(\d+)/i);
+      const eventId = eventIdMatch ? eventIdMatch[1] : '';
+      const applyMatch = normalized.match(/Apply exception on:\s*([^\r\n]+)/i);
+      const processOptions = [
+        getBasename(applyMatch ? applyMatch[1] : ''),
+        getBasename(table.PROCESS || ''),
+        getBasename(extractFieldValue(lines, 'Process Path'))
       ];
+      const process = processOptions.find(Boolean) || '';
+      const collectorGroup =
+        normalizeCollectorGroup(parseCollectorGroupSection(lines)) ||
+        normalizeCollectorGroup(extractFieldValue(lines, 'Collector Group'));
+      const device = (table.DEVICE || extractFieldValue(lines, 'Device') || extractFieldValue(lines, 'Host Name') || '').trim();
+      const userField = extractFieldValue(lines, 'User');
+      const ownerField = extractFieldValue(lines, 'Process Owner');
+      const loggedInUser = userField || stripDomain(ownerField);
+      const company = extractFieldValue(lines, 'Company');
+      const certificate = parseCertificateValue(extractFieldValue(lines, 'Certificate') || extractFieldValue(lines, 'Certificate Status'));
+      const classificationRaw = table.CLASSIFICATION || extractFieldValue(lines, 'Classification');
+      const classification = mapClassification(typeof classificationRaw === 'string' ? classificationRaw : '');
+      const sha1Match = normalized.match(/Process Hash \(SHA-1\):\s*([A-Fa-f0-9]{40})/);
+      const virusTotal = sha1Match ? `https://www.virustotal.com/gui/search/${sha1Match[1]}` : '';
+      const target = extractFieldValue(lines, 'Target');
+      const commandLine = extractFieldValue(lines, 'Command Line');
+      const additionalInfo = table.DESTINATION || extractUppercaseAction(lines);
 
       return {
-        text: lines.join('\n'),
-        eventId: eventId && eventId !== 'N/A' ? eventId : sourceLabel
+        eventId,
+        process,
+        collectorGroup,
+        device,
+        loggedInUser,
+        company,
+        certification,
+        classification,
+        virusTotal,
+        target,
+        commandLine,
+        additionalInfo
       };
+    }
+
+    function parsePlainTextSummaries(text, fileName) {
+      if (typeof text !== 'string') return [];
+      const normalized = text.replace(/\r\n/g, '\n');
+      const segments = normalized.split(/Event GraphAutomated Analysis/);
+      const results = [];
+      const baseLabel = fileName || 'Event';
+      segments.forEach((segment, index) => {
+        const trimmed = segment.trim();
+        if (!trimmed) return;
+        const fields = buildFieldsFromTextChunk(trimmed);
+        const fallbackId = `${baseLabel}-${index + 1}`;
+        const eventIdDisplay = safeField(fields.eventId);
+        const summary = buildSummaryFromFields(fields, fallbackId);
+        const displayName = eventIdDisplay !== 'N/A'
+          ? `${baseLabel} (Event ${eventIdDisplay})`
+          : `${baseLabel} (Event ${index + 1})`;
+        results.push({
+          ...summary,
+          displayName
+        });
+      });
+      return results;
     }
 
     function renderSummary(index) {
@@ -530,22 +760,49 @@
         return;
       }
       try {
-        const promises = Array.from(fileList).map(async (file) => {
+        const allResults = [];
+        for (const file of Array.from(fileList)) {
           const text = await readFileAsText(file);
-          let parsed;
-          try {
-            parsed = JSON.parse(text);
-          } catch (err) {
-            throw new Error(`Failed to parse "${file.name}": ${err.message}`);
+          if (typeof text !== 'string') continue;
+          const trimmed = text.trim();
+          if (!trimmed) continue;
+
+          let parsedJson = null;
+          if (/^[\s\r\n]*[\[{]/.test(trimmed)) {
+            try {
+              parsedJson = JSON.parse(trimmed);
+            } catch (err) {
+              parsedJson = null;
+            }
           }
-          const summary = buildSummary(parsed, file.name);
-          return {
-            ...summary,
-            displayName: file.name
-          };
-        });
-        const results = await Promise.all(promises);
-        handleParsedResults(results);
+
+          if (parsedJson !== null) {
+            const payloads = Array.isArray(parsedJson) ? parsedJson : [parsedJson];
+            payloads.forEach((item, idx) => {
+              if (!item || typeof item !== 'object') return;
+              const fallbackId = `${file.name}-${idx + 1}`;
+              const summary = buildSummaryFromJson(item, fallbackId);
+              const displayName = payloads.length > 1 ? `${file.name} (Record ${idx + 1})` : file.name;
+              allResults.push({
+                ...summary,
+                displayName
+              });
+            });
+            continue;
+          }
+
+          const textSummaries = parsePlainTextSummaries(text, file.name);
+          if (textSummaries.length === 0) {
+            throw new Error(`Unable to parse FortiEDR text in "${file.name}".`);
+          }
+          allResults.push(...textSummaries);
+        }
+
+        if (allResults.length === 0) {
+          throw new Error('No events were found in the provided files.');
+        }
+
+        handleParsedResults(allResults);
       } catch (err) {
         resetState();
         showError(err.message || 'Unable to parse the provided files.');
@@ -662,7 +919,7 @@
         ]
       };
 
-      const summary = buildSummary(sampleData, 'Sample');
+      const summary = buildSummaryFromJson(sampleData, 'Sample');
       parsedSummaries = [
         {
           ...summary,
