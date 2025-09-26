@@ -506,6 +506,45 @@
         }
         break;
       }
+
+      const processPathIndex = lines.findIndex(line => /^Process Path\b/i.test(line.trim()));
+      if (processPathIndex > -1) {
+        let nonEmptyAfter = 0;
+        for (let i = processPathIndex + 1; i < lines.length && i <= processPathIndex + 8; i++) {
+          const candidate = cleanValue(lines[i]);
+          if (!candidate) continue;
+
+          const pathMatch = candidate.match(/\\Users\\([^\\/\r\n]+)\\?/i);
+          if (pathMatch && pathMatch[1]) {
+            return pathMatch[1];
+          }
+
+          nonEmptyAfter++;
+          if (nonEmptyAfter >= 3) {
+            if (/^[A-Za-z0-9._-]{2,}$/.test(candidate)) {
+              return candidate;
+            }
+
+            const inlineLabelMatch = candidate.match(/^[^:]+:\s*(.+)$/);
+            if (inlineLabelMatch) {
+              const inlineValue = cleanValue(inlineLabelMatch[1]);
+              if (inlineValue) {
+                return inlineValue;
+              }
+
+              for (let j = i + 1; j < lines.length && j <= i + 2; j++) {
+                const nextCandidate = cleanValue(lines[j]);
+                if (!nextCandidate) continue;
+                if (/^[A-Za-z][A-Za-z0-9 ()/\-]{1,40}:/i.test(nextCandidate)) {
+                  break;
+                }
+                return nextCandidate;
+              }
+            }
+          }
+        }
+      }
+
       return '';
     }
 
