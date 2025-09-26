@@ -354,6 +354,8 @@
     }
 
     function extractCollectorGroup(text, lines) {
+      const direct = extractLineValue(text, 'Collector groups?', true);
+      if (direct) return direct;
       const triggered = text.match(/Triggered Rules[^\r\n]*?([A-Za-z0-9][A-Za-z0-9 _-]{0,40})/i);
       if (triggered) {
         const candidate = cleanValue(triggered[1]).split(/[:\-]/)[0].trim();
@@ -484,6 +486,36 @@
       return '';
     }
 
+    function extractProcessFromLastSeen(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        if (/LAST SEEN/i.test(lines[i])) {
+          const following = [];
+          for (let j = i + 1; j < lines.length && following.length < 8; j++) {
+            const candidate = cleanValue(lines[j]);
+            if (!candidate) continue;
+            following.push(candidate);
+          }
+          if (following.length >= 3) {
+            for (let k = 2; k < following.length; k++) {
+              let value = following[k];
+              if (/^Process\s*:?-?\s*$/i.test(value)) {
+                if (k + 1 < following.length) {
+                  value = following[++k];
+                } else {
+                  continue;
+                }
+              }
+              if (/^(Collector groups?|User|Company|Command Line|Target|Classification|Additional information|Certificate)/i.test(value)) {
+                continue;
+              }
+              return cleanValue(value.replace(/^Process\s*[:|\-]*/i, ''));
+            }
+          }
+        }
+      }
+      return '';
+    }
+
     function parseEvent(chunk, usedEventIds) {
       const normalized = normalizeLineEndings(chunk);
       const lines = normalized.split('\n');
@@ -491,12 +523,13 @@
       if (eventId && usedEventIds) {
         usedEventIds.add(eventId);
       }
-      const process = processName || extractProcessFallback(normalized) || 'N/A';
+      const processFromLastSeen = extractProcessFromLastSeen(lines);
+      const process = processFromLastSeen || processName || extractProcessFallback(normalized) || 'N/A';
       const collectorGroup = extractCollectorGroup(normalized, lines) || 'Default';
       const device = extractDeviceFromLastSeen(lines) || extractTableValue(lines, 'DEVICE') || 'N/A';
-      const userRaw = extractLineValue(normalized, 'User');
+      const userRaw = extractLineValue(normalized, 'User', true);
       const user = stripDomain(userRaw) || 'N/A';
-      const company = extractLineValue(normalized, 'Company') || 'N/A';
+      const company = extractLineValue(normalized, 'Company', true) || 'N/A';
       const certification = extractCertification(normalized);
       const classification = extractClassification(normalized);
       const targetLine = extractLineValue(normalized, 'Target', true) || 'N/A';
