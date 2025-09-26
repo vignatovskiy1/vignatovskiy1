@@ -239,6 +239,40 @@
 
     let formattedEvents = [];
 
+    const regexSpecialChars = /[.*+?^${}()|[\]\\]/g;
+    function escapeRegExp(value) {
+      return value.replace(regexSpecialChars, '\\$&');
+    }
+
+    function createLabelPattern(labels) {
+      const pattern = labels.map(escapeRegExp).join('|');
+      return new RegExp(`^(${pattern})\\b`, 'i');
+    }
+
+    const userStopLabels = [
+      'Count',
+      'Company',
+      'Collector',
+      'Classification',
+      'Command Line',
+      'Target',
+      'Device',
+      'Process',
+      'Event',
+      'Certificate',
+      'Certification',
+      'Additional information',
+      'Triggered',
+      'Destination',
+      'Policy',
+      'Rule',
+      'History',
+      'Details'
+    ];
+
+    const userStopPattern = createLabelPattern(userStopLabels);
+    const precedingUserStopPattern = createLabelPattern(['User', ...userStopLabels]);
+
     function normalizeLineEndings(text) {
       return text.replace(/\r\n?/g, '\n');
     }
@@ -499,12 +533,28 @@
         for (let j = i + 1; j < lines.length; j++) {
           const candidate = cleanValue(lines[j]);
           if (!candidate) continue;
-          if (/^(Count|Company|Collector|Classification|Command Line|Target|Device|Process|Event|Certificate|Additional information|Triggered|Destination|Policy|Rule|History|Details)\b/i.test(candidate)) {
+          if (userStopPattern.test(candidate)) {
             break;
           }
           return candidate;
         }
         break;
+      }
+      return '';
+    }
+
+    function extractUserAboveCount(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        if (!/^Count\b/i.test(lines[i])) continue;
+
+        for (let j = i - 1; j >= 0; j--) {
+          const candidate = cleanValue(lines[j]);
+          if (!candidate) continue;
+          if (precedingUserStopPattern.test(candidate)) {
+            break;
+          }
+          return candidate;
+        }
       }
       return '';
     }
@@ -550,7 +600,7 @@
       const process = processFromLastSeen || processName || extractProcessFallback(normalized) || 'N/A';
       const collectorGroup = extractCollectorGroup(normalized, lines) || 'Default';
       const device = extractDeviceFromLastSeen(lines) || extractTableValue(lines, 'DEVICE') || 'N/A';
-      const userRaw = extractUser(lines) || extractLineValue(normalized, 'User', true);
+      const userRaw = extractUser(lines) || extractLineValue(normalized, 'User', true) || extractUserAboveCount(lines);
       const user = stripDomain(userRaw) || 'N/A';
       const company = extractLineValue(normalized, 'Company', true) || 'N/A';
       const certification = extractCertification(normalized);
