@@ -276,22 +276,71 @@
       return parts[parts.length - 1];
     }
 
-    function extractEventIdAndProcess(lines) {
-      let eventId = '';
-      let processName = '';
-      for (const line of lines) {
-        const eventMatch = line.match(/\bEvent\s+(\d{6,})\b/i);
-        if (eventMatch && !eventId) {
-          eventId = eventMatch[1];
-          const remainder = line.slice(eventMatch.index + eventMatch[0].length);
-          const processMatch = remainder.match(/([A-Za-z0-9_.-]+\.(?:exe|dll|msi|bat|cmd|ps1|scr|com))/i);
-          if (processMatch) {
-            processName = processMatch[1];
-          }
+    function extractEventIdAndProcess(lines, usedEventIds) {
+      const eventPattern = /\bEvent\s+(\d{6,})\b/i;
+      const candidates = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const eventMatch = line.match(eventPattern);
+        if (eventMatch) {
+          candidates.push({
+            id: eventMatch[1],
+            index: i,
+            matchText: eventMatch[0],
+            matchIndex: eventMatch.index ?? line.indexOf(eventMatch[0])
+          });
         }
-        if (eventId && processName) break;
       }
-      return { eventId, processName };
+
+      if (!candidates.length) {
+        return { eventId: '', processName: '' };
+      }
+
+      let selected = null;
+      for (const candidate of candidates) {
+        if (!usedEventIds || !usedEventIds.has(candidate.id)) {
+          selected = candidate;
+          break;
+        }
+      }
+
+      if (!selected) {
+        selected = candidates[0];
+      }
+
+      let processName = '';
+      const lineWithEvent = lines[selected.index];
+      if (selected.matchIndex > -1) {
+        const remainder = lineWithEvent.slice(selected.matchIndex + selected.matchText.length);
+        const processMatch = remainder.match(/([A-Za-z0-9_.-]+\.(?:exe|dll|msi|bat|cmd|ps1|scr|com))/i);
+        if (processMatch) {
+          processName = processMatch[1];
+        }
+      }
+
+      if (!processName) {
+        for (let i = selected.index + 1; i < lines.length; i++) {
+          const candidateLine = cleanValue(lines[i]);
+          if (!candidateLine) continue;
+
+          const nextMatch = candidateLine.match(eventPattern);
+          if (nextMatch) {
+            if (nextMatch[1] === selected.id) {
+              continue;
+            }
+            break;
+          }
+
+          const exeMatch = candidateLine.match(/([A-Za-z0-9_.-]+\.(?:exe|dll|msi|bat|cmd|ps1|scr|com))/i);
+          processName = exeMatch ? exeMatch[1] : candidateLine;
+          break;
+        }
+      }
+
+      processName = cleanValue(processName.replace(/^Process\s*[:|\-]*/i, ''));
+
+      return { eventId: selected.id, processName };
     }
 
     function extractProcessFallback(text) {
@@ -419,13 +468,32 @@
       return 'N/A';
     }
 
-    function parseEvent(chunk) {
+    function extractDeviceFromLastSeen(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        if (/LAST SEEN/i.test(lines[i])) {
+          for (let j = i + 1; j < lines.length; j++) {
+            const candidate = cleanValue(lines[j].replace(/^[\s|:;-]+/, ''));
+            if (!candidate) continue;
+            if (/^(Event\s+\d{6,}|Device\b|Process\b|Target\b|Command Line\b|User\b|Company\b|Collector\b|Classification\b|Additional information\b)/i.test(candidate)) {
+              break;
+            }
+            return candidate;
+          }
+        }
+      }
+      return '';
+    }
+
+    function parseEvent(chunk, usedEventIds) {
       const normalized = normalizeLineEndings(chunk);
       const lines = normalized.split('\n');
-      const { eventId, processName } = extractEventIdAndProcess(lines);
+      const { eventId, processName } = extractEventIdAndProcess(lines, usedEventIds);
+      if (eventId && usedEventIds) {
+        usedEventIds.add(eventId);
+      }
       const process = processName || extractProcessFallback(normalized) || 'N/A';
       const collectorGroup = extractCollectorGroup(normalized, lines) || 'Default';
-      const device = extractTableValue(lines, 'DEVICE') || 'N/A';
+      const device = extractDeviceFromLastSeen(lines) || extractTableValue(lines, 'DEVICE') || 'N/A';
       const userRaw = extractLineValue(normalized, 'User');
       const user = stripDomain(userRaw) || 'N/A';
       const company = extractLineValue(normalized, 'Company') || 'N/A';
@@ -548,9 +616,11 @@
       const parts = normalized.split(/Event GraphAutomated Analysis/g);
       const events = [];
 
+      const usedEventIds = new Set();
+
       for (const part of parts) {
         if (!hasContent(part)) continue;
-        const event = parseEvent(part);
+        const event = parseEvent(part, usedEventIds);
         events.push(event);
       }
 
