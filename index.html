@@ -485,10 +485,6 @@
       const hasWhenCreatedBy = lines.some(line =>
         line && line.toLowerCase().includes('when created by:')
       );
-      if (!hasWhenCreatedBy) {
-        return '';
-      }
-
       const findSectionValues = (label, count) => {
         const index = lines.findIndex(line => line && line.trim() === label);
         if (index === -1) return [];
@@ -517,11 +513,13 @@
         parts.push('on');
       }
 
-      const createdByText = whenCreatedByValues.join(' ');
-      if (createdByText) {
-        parts.push(`when created by: ${createdByText}`);
-      } else {
-        parts.push('when created by:');
+      if (hasWhenCreatedBy) {
+        const createdByText = whenCreatedByValues.join(' ');
+        if (createdByText) {
+          parts.push(`when created by: ${createdByText}`);
+        } else {
+          parts.push('when created by:');
+        }
       }
 
       return parts.join(' ').replace(/\s+/g, ' ').trim();
