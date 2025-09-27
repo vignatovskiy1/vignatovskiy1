@@ -383,6 +383,27 @@
     }
 
     function extractClassification(lines, tableData) {
+      const classificationHeaderIndex = lines.findIndex((line) =>
+        line && line.trim() === 'CLASSIFICATION'
+      );
+      if (classificationHeaderIndex !== -1) {
+        let linesBelow = 0;
+        for (
+          let i = classificationHeaderIndex + 1;
+          i < lines.length;
+          i++
+        ) {
+          linesBelow += 1;
+          if (linesBelow === 7) {
+            const targetLine = lines[i];
+            const cleaned = cleanValue(targetLine);
+            if (cleaned) {
+              return cleaned;
+            }
+            break;
+          }
+        }
+      }
       if (tableData.CLASSIFICATION) {
         return cleanValue(tableData.CLASSIFICATION);
       }
