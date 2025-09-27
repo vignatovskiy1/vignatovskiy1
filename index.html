@@ -481,6 +481,52 @@
       return fallback || 'N/A';
     }
 
+    function buildTechNotes(lines) {
+      const hasWhenCreatedBy = lines.some(line =>
+        line && line.toLowerCase().includes('when created by:')
+      );
+      if (!hasWhenCreatedBy) {
+        return '';
+      }
+
+      const findSectionValues = (label, count) => {
+        const index = lines.findIndex(line => line && line.trim() === label);
+        if (index === -1) return [];
+        const values = [];
+        for (let offset = 1; offset <= count; offset++) {
+          const candidate = cleanValue(lines[index + offset]);
+          if (candidate) {
+            values.push(candidate);
+          }
+        }
+        return values;
+      };
+
+      const triggeredValues = findSectionValues('Triggered Rules:', 1);
+      const applyExceptionValues = findSectionValues('Apply exception on:', 2);
+      const whenCreatedByValues = findSectionValues('When created by:', 2);
+
+      const parts = [];
+      const triggered = triggeredValues[0] || '';
+      parts.push(`Triggered rules: ${triggered}`.trim());
+
+      const applyExceptionText = applyExceptionValues.join(' ');
+      if (applyExceptionText) {
+        parts.push(`on ${applyExceptionText}`);
+      } else {
+        parts.push('on');
+      }
+
+      const createdByText = whenCreatedByValues.join(' ');
+      if (createdByText) {
+        parts.push(`when created by: ${createdByText}`);
+      } else {
+        parts.push('when created by:');
+      }
+
+      return parts.join(' ').replace(/\s+/g, ' ').trim();
+    }
+
     function buildEventSummary(chunk) {
       const lines = chunk.split(/\r?\n/);
       const tableData = parseSelectedTable(lines);
@@ -545,6 +591,8 @@
       }
       const additionalInfo = extractAdditionalInfo(lines, tableData);
 
+      const techNotes = buildTechNotes(lines);
+
       const summaryLines = [
         padLabel('Event ID') + eventId,
         padLabel('Process') + process,
@@ -562,7 +610,7 @@
         '',
         `Additional information: ${additionalInfo}`,
         '',
-        'Tech notes: ',
+        `Tech notes: ${techNotes}`,
         '',
         'Next Steps:',
         'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
