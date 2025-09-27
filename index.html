@@ -403,8 +403,14 @@
       const lines = chunk.split(/\r?\n/);
       const tableData = parseSelectedTable(lines);
 
-      const eventIdMatch = chunk.match(/Event\s+(\d{3,})/);
-      const eventId = eventIdMatch ? eventIdMatch[1] : 'N/A';
+      const eventId = (() => {
+        const exceptionMatch = chunk.match(/Exceptions for event\s+(\d{3,})/i);
+        if (exceptionMatch) {
+          return exceptionMatch[1];
+        }
+        const fallbackMatch = chunk.match(/Event\s+(\d{3,})/);
+        return fallbackMatch ? fallbackMatch[1] : 'N/A';
+      })();
 
       const process = extractProcess(lines, tableData);
       const collectorGroup = extractCollectorGroup(lines);
