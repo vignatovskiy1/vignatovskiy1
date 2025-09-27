@@ -305,28 +305,23 @@
     }
 
     function extractCollectorGroup(lines) {
-      let collector = '';
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         if (!line) continue;
         if (line.trim().toLowerCase() === 'collector groups') {
           for (let j = i + 1; j < lines.length; j++) {
-            const next = lines[j] ? lines[j].trim() : '';
+            const next = lines[j];
             if (!next) continue;
-            if (/^all groups$/i.test(next)) continue;
-            if (/^collector groups$/i.test(next)) continue;
-            collector = next;
-            break;
+            const cleaned = cleanValue(next);
+            if (cleaned) {
+              return cleaned;
+            }
           }
           break;
         }
       }
-      if (!collector) {
-        collector = findLineValue(lines, 'Collector Group');
-      }
-      if (!collector) return 'N/A';
-      if (/^default collector group$/i.test(collector)) return 'Default';
-      return collector;
+      const fallback = findLineValue(lines, 'Collector Group');
+      return fallback || 'N/A';
     }
 
     function extractAdditionalInfo(lines, tableData) {
@@ -365,6 +360,21 @@
     }
 
     function extractDevice(lines, tableData) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim().toLowerCase() === 'last seen') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const next = lines[j];
+            if (!next) continue;
+            const cleaned = cleanValue(next);
+            if (cleaned) {
+              return cleaned;
+            }
+          }
+          break;
+        }
+      }
       if (tableData.DEVICE) {
         return cleanValue(tableData.DEVICE);
       }
