@@ -475,7 +475,38 @@
       const classification = extractClassification(lines, tableData);
       const virusTotal = extractVirusTotalLink(chunk);
       const target = findLineValue(lines, 'Target') || 'N/A';
-      const commandLine = findLineValue(lines, 'Command Line') || 'N/A';
+      let commandLine = findLineValue(lines, 'Command Line') || '';
+      const exactCommandLineIndex = (() => {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          if (trimmed.toLowerCase() === 'command line:') {
+            return i;
+          }
+        }
+        return -1;
+      })();
+      if (exactCommandLineIndex !== -1) {
+        let candidate = '';
+        for (let i = exactCommandLineIndex + 1; i < lines.length; i++) {
+          const nextLine = lines[i];
+          if (!nextLine) continue;
+          const cleaned = cleanValue(nextLine);
+          if (!cleaned) continue;
+          candidate = cleaned;
+          break;
+        }
+        if (!candidate || candidate.endsWith(':')) {
+          commandLine = 'N/A';
+        } else {
+          commandLine = candidate;
+        }
+      }
+      if (!commandLine) {
+        commandLine = 'N/A';
+      }
       const additionalInfo = extractAdditionalInfo(lines, tableData);
 
       const summaryLines = [
