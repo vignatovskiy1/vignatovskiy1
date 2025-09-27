@@ -445,6 +445,28 @@
       return 'N/A';
     }
 
+    function extractCompany(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim() === 'Company:') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j];
+            if (!nextLine) continue;
+            const cleaned = cleanValue(nextLine);
+            if (!cleaned) continue;
+            if (cleaned.endsWith(':')) {
+              return 'N/A';
+            }
+            return cleaned;
+          }
+          return 'N/A';
+        }
+      }
+      const fallback = findLineValue(lines, 'Company');
+      return fallback || 'N/A';
+    }
+
     function buildEventSummary(chunk) {
       const lines = chunk.split(/\r?\n/);
       const tableData = parseSelectedTable(lines);
@@ -462,7 +484,7 @@
       const collectorGroup = extractCollectorGroup(lines);
       const device = extractDevice(lines, tableData);
       const user = extractLoggedInUser(lines);
-      const company = findLineValue(lines, 'Company') || 'N/A';
+      const company = extractCompany(lines);
       const certification = (() => {
         const cert = findLineValue(lines, 'Certificate');
         if (!cert) return 'N/A';
