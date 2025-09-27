@@ -399,6 +399,21 @@
     }
 
     function extractLoggedInUser(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim() === 'User:') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j];
+            if (!nextLine) continue;
+            const cleaned = cleanValue(nextLine);
+            if (cleaned) {
+              return cleaned;
+            }
+          }
+          break;
+        }
+      }
       const user = findLineValue(lines, 'User');
       if (user) return user;
       const processOwner = findLineValue(lines, 'Process Owner');
