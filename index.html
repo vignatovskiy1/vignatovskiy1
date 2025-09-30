@@ -25,108 +25,92 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1.5rem;
     }
 
     main {
-      width: min(960px, 100%);
+      width: min(920px, 100%);
     }
 
     .card {
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.94);
       border-radius: 18px;
-      padding: 2rem;
-      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
-      backdrop-filter: blur(4px);
+      padding: clamp(1.75rem, 2vw + 1.25rem, 2.75rem);
+      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.18);
+      backdrop-filter: blur(6px);
     }
 
     @media (prefers-color-scheme: dark) {
       .card {
-        background: rgba(15, 23, 42, 0.85);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        background: rgba(15, 23, 42, 0.88);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
       }
     }
 
     h1 {
       margin-top: 0;
-      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-size: clamp(1.8rem, 2.8vw, 2.5rem);
     }
 
-    .uploader {
-      display: grid;
-      gap: 1.5rem;
-      margin-block: 1.5rem;
+    p {
+      margin-bottom: 1.75rem;
+      line-height: 1.6;
     }
 
-    .drop-zone {
-      border: 2px dashed rgba(59, 130, 246, 0.6);
+    textarea {
+      width: 100%;
+      min-height: 280px;
       border-radius: 14px;
-      padding: 2rem;
-      text-align: center;
-      transition: border-color 0.2s ease, background-color 0.2s ease;
-      cursor: pointer;
-    }
-
-    .drop-zone.dragover {
-      border-color: rgb(37, 99, 235);
-      background: rgba(37, 99, 235, 0.08);
-    }
-
-    .file-input {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    input[type="file"] {
-      display: inline-block;
-    }
-
-    .file-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .file-pill {
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      background: rgba(15, 23, 42, 0.04);
+      padding: 1.1rem 1.25rem;
+      font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.92rem;
+      line-height: 1.55;
+      resize: vertical;
       color: inherit;
-      cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
-      border: 1px solid transparent;
-      font-size: 0.95rem;
     }
 
-    .file-pill:hover,
-    .file-pill.selected {
-      background: rgba(37, 99, 235, 0.2);
-      border-color: rgba(37, 99, 235, 0.35);
+    @media (prefers-color-scheme: dark) {
+      textarea {
+        background: rgba(15, 23, 42, 0.35);
+        border-color: rgba(148, 163, 184, 0.35);
+      }
     }
 
-    .actions {
+    textarea::placeholder {
+      color: rgba(100, 116, 139, 0.8);
+    }
+
+    .controls {
       display: flex;
       flex-wrap: wrap;
       gap: 0.75rem;
+      margin: 1.5rem 0;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     button {
-      padding: 0.55rem 1.2rem;
+      padding: 0.6rem 1.4rem;
       border-radius: 10px;
       border: none;
       cursor: pointer;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.96rem;
       background: rgb(37, 99, 235);
       color: white;
       transition: transform 0.2s ease, background 0.2s ease, opacity 0.2s ease;
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
     }
 
     button.secondary {
@@ -136,8 +120,13 @@
 
     @media (prefers-color-scheme: dark) {
       button.secondary {
-        background: rgba(148, 163, 184, 0.2);
+        background: rgba(148, 163, 184, 0.25);
       }
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
     button:hover:not(:disabled) {
@@ -145,7 +134,7 @@
     }
 
     pre {
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       color: #e2e8f0;
       border-radius: 12px;
       padding: 1.5rem;
@@ -157,9 +146,18 @@
       white-space: pre;
     }
 
+    pre[contenteditable="true"] {
+      outline: none;
+      cursor: text;
+    }
+
+    pre[contenteditable="true"]:focus-visible {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+    }
+
     @media (prefers-color-scheme: light) {
       pre {
-        background: #10172a;
+        background: #111827;
       }
     }
 
@@ -167,7 +165,7 @@
       margin-top: 1rem;
       padding: 1rem 1.25rem;
       border-radius: 12px;
-      background: rgba(220, 38, 38, 0.15);
+      background: rgba(220, 38, 38, 0.12);
       color: #b91c1c;
       font-weight: 600;
       display: none;
@@ -197,57 +195,466 @@
   <main>
     <section class="card">
       <h1>FortiEDR Incident Summary Formatter</h1>
-      <p>Upload one or more FortiEDR JSON files to generate an aligned incident summary that mirrors the required layout.</p>
+      <p>Paste FortiEDR event notifications below and generate human-readable summaries that follow the exact SOC handoff format.</p>
 
-      <div class="uploader" id="uploader">
-        <div class="drop-zone" id="dropZone" tabindex="0" role="button" aria-label="Upload FortiEDR JSON files">
-          <div class="file-input">
-            <strong>Click to choose or drag &amp; drop .json files</strong>
-            <input id="fileInput" type="file" accept="application/json,.json" multiple>
-          </div>
-        </div>
+      <label for="input" class="sr-only">Paste FortiEDR events</label>
+      <textarea id="input" placeholder="Paste FortiEDR event text here...&#10;&#10;Each event block must end with: Event GraphAutomated Analysis"></textarea>
 
-        <div class="file-list" id="fileList" aria-live="polite"></div>
-
-        <div class="actions">
-          <button id="copyButton" disabled>Copy to clipboard</button>
-          <button id="downloadButton" disabled>Download .txt</button>
-          <button class="secondary" id="testButton" type="button">Load Test Data</button>
-        </div>
+      <div class="controls">
+        <button id="formatButton" type="button">Format incidents</button>
+        <button id="copyButton" type="button" disabled>Copy output</button>
+        <button id="clearButton" type="button" class="secondary">Clear</button>
       </div>
 
-      <pre id="output" aria-live="polite"></pre>
+      <pre id="output" aria-live="polite" contenteditable="true" spellcheck="false"></pre>
       <div class="error" id="error" role="alert"></div>
 
-      <p class="footer-note">The formatted summary keeps a fixed monospace layout with padded labels for quick analyst handoff.</p>
+      <p class="footer-note">The parser splits events by the literal marker “Event GraphAutomated Analysis” and fills in missing values with N/A automatically.</p>
     </section>
   </main>
 
   <script>
-    const fileInput = document.getElementById('fileInput');
-    const dropZone = document.getElementById('dropZone');
-    const fileListEl = document.getElementById('fileList');
-    const outputEl = document.getElementById('output');
+    const inputEl = document.getElementById('input');
+    const formatButton = document.getElementById('formatButton');
     const copyButton = document.getElementById('copyButton');
-    const downloadButton = document.getElementById('downloadButton');
+    const clearButton = document.getElementById('clearButton');
+    const outputEl = document.getElementById('output');
     const errorEl = document.getElementById('error');
-    const testButton = document.getElementById('testButton');
 
-    let parsedSummaries = [];
-    let activeIndex = -1;
+    const updateCopyButtonState = () => {
+      const hasContent = outputEl.textContent.trim().length > 0;
+      copyButton.disabled = !hasContent;
+    };
 
-    function resetState() {
-      parsedSummaries = [];
-      activeIndex = -1;
-      outputEl.textContent = '';
-      copyButton.disabled = true;
-      downloadButton.disabled = true;
-      fileListEl.innerHTML = '';
+    function padLabel(label) {
+      return (label + ':').padEnd(26, ' ');
+    }
+
+    function cleanValue(value) {
+      if (typeof value !== 'string') return '';
+      const trimmed = value.trim();
+      if (!trimmed) return '';
+      return trimmed.replace(/^['"]|['"]$/g, '');
+    }
+
+    function getBasename(value) {
+      const cleaned = cleanValue(value);
+      if (!cleaned) return '';
+      const parts = cleaned.split(/[\\\/]/);
+      const last = parts.pop();
+      return last || cleaned;
+    }
+
+    function stripDomain(user) {
+      const cleaned = cleanValue(user);
+      if (!cleaned) return '';
+      if (cleaned.includes('\\')) {
+        const bits = cleaned.split('\\');
+        return bits[bits.length - 1];
+      }
+      if (cleaned.includes('/')) {
+        const bits = cleaned.split('/');
+        return bits[bits.length - 1];
+      }
+      return cleaned;
+    }
+
+    function splitEvents(rawText) {
+      return rawText
+        .split('Event GraphAutomated Analysis')
+        .map(chunk => chunk.trim())
+        .filter(chunk => chunk.length > 0);
+    }
+
+    function findLineValue(lines, label) {
+      const lowerLabel = label.toLowerCase();
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (trimmed.toLowerCase().startsWith(lowerLabel)) {
+          let value = trimmed.slice(label.length).replace(/^[\s:-]+/, '').trim();
+          if (!value) {
+            for (let j = i + 1; j < lines.length; j++) {
+              const next = lines[j] ? lines[j].trim() : '';
+              if (next) {
+                value = next;
+                break;
+              }
+            }
+          }
+          return cleanValue(value);
+        }
+      }
+      return '';
+    }
+
+    function parseSelectedTable(lines) {
+      const result = {};
+      for (let i = 0; i < lines.length; i++) {
+        const raw = lines[i];
+        if (!raw) continue;
+        const headerLine = raw.trim();
+        if (!headerLine) continue;
+        const normalized = headerLine.replace(/\s+/g, ' ').trim();
+        if (/^PROCESS\b/i.test(normalized) && /DEVICE/i.test(normalized)) {
+          const headers = headerLine.split(/\s{2,}|\t+/).map(h => h.trim().toUpperCase());
+          for (let j = i + 1; j < lines.length; j++) {
+            const dataLine = lines[j];
+            if (!dataLine || !dataLine.trim()) break;
+            const values = dataLine.split(/\s{2,}|\t+/).map(v => v.trim()).filter(Boolean);
+            if (!values.length) continue;
+            headers.forEach((header, index) => {
+              if (!result[header] && values[index]) {
+                result[header] = values[index];
+              }
+            });
+            break;
+          }
+          break;
+        }
+      }
+      return result;
+    }
+
+    function extractCollectorGroup(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim().toLowerCase() === 'collector groups') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const next = lines[j];
+            if (!next) continue;
+            const cleaned = cleanValue(next);
+            if (cleaned) {
+              return cleaned;
+            }
+          }
+          break;
+        }
+      }
+      const fallback = findLineValue(lines, 'Collector Group');
+      return fallback || 'N/A';
+    }
+
+    function extractAdditionalInfo(lines, tableData) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim() === 'Raw Data Items: All') {
+          const targetIndex = i + 13;
+          if (targetIndex < lines.length) {
+            const candidate = cleanValue(lines[targetIndex]);
+            if (candidate) {
+              return candidate;
+            }
+          }
+          break;
+        }
+      }
+      if (tableData.DESTINATION) {
+        return cleanValue(tableData.DESTINATION);
+      }
+      const keywords = ['EXECUTE', 'EXECUTION', 'WRITE', 'ACCESS', 'ATTEMPT', 'NETWORK', 'PROCESS', 'SERVICE', 'RUN', 'DELETE', 'CREATE'];
+      for (const line of lines) {
+        if (!line) continue;
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        if (/^[A-Z][A-Z \-]+$/.test(trimmed)) {
+          if (keywords.some(keyword => trimmed.includes(keyword))) {
+            return trimmed;
+          }
+        }
+      }
+      return 'N/A';
+    }
+
+    function extractProcess(lines, tableData) {
+      const applyException = findLineValue(lines, 'Apply exception on');
+      if (applyException) {
+        const base = getBasename(applyException);
+        if (base) return base;
+      }
+      if (tableData.PROCESS) {
+        return cleanValue(tableData.PROCESS);
+      }
+      const processPath = findLineValue(lines, 'Process Path');
+      if (processPath) {
+        const base = getBasename(processPath);
+        if (base) return base;
+      }
+      return 'N/A';
+    }
+
+    function extractDevice(lines, tableData) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim().toLowerCase() === 'last seen') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const next = lines[j];
+            if (!next) continue;
+            const cleaned = cleanValue(next);
+            if (cleaned) {
+              return cleaned;
+            }
+          }
+          break;
+        }
+      }
+      if (tableData.DEVICE) {
+        return cleanValue(tableData.DEVICE);
+      }
+      const device = findLineValue(lines, 'Device');
+      return device || 'N/A';
+    }
+
+    function extractClassification(lines, tableData) {
+      const classificationHeaderIndex = lines.findIndex((line) =>
+        line && line.trim() === 'CLASSIFICATION'
+      );
+      if (classificationHeaderIndex !== -1) {
+        let linesBelow = 0;
+        for (
+          let i = classificationHeaderIndex + 1;
+          i < lines.length;
+          i++
+        ) {
+          linesBelow += 1;
+          if (linesBelow === 7) {
+            const targetLine = lines[i];
+            const cleaned = cleanValue(targetLine);
+            if (cleaned) {
+              return cleaned;
+            }
+            break;
+          }
+        }
+      }
+      if (tableData.CLASSIFICATION) {
+        return cleanValue(tableData.CLASSIFICATION);
+      }
+      const classification = findLineValue(lines, 'Classification');
+      return classification || 'N/A';
+    }
+
+    function extractVirusTotalLink(chunk) {
+      const match = chunk.match(/Process Hash \(SHA-1\):\s*([A-Fa-f0-9]{40})/);
+      if (match) {
+        return `https://www.virustotal.com/gui/search/${match[1]}`;
+      }
+      return 'N/A';
+    }
+
+    function extractLoggedInUser(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim() === 'User:') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j];
+            if (!nextLine) continue;
+            const cleaned = cleanValue(nextLine);
+            if (cleaned) {
+              return cleaned;
+            }
+          }
+          break;
+        }
+      }
+      const user = findLineValue(lines, 'User');
+      if (user) return user;
+      const processOwner = findLineValue(lines, 'Process Owner');
+      if (processOwner) {
+        const stripped = stripDomain(processOwner);
+        if (stripped) return stripped;
+      }
+      return 'N/A';
+    }
+
+    function extractCompany(lines) {
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line) continue;
+        if (line.trim() === 'Company:') {
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j];
+            if (!nextLine) continue;
+            const cleaned = cleanValue(nextLine);
+            if (!cleaned) continue;
+            if (cleaned.endsWith(':')) {
+              return 'N/A';
+            }
+            return cleaned;
+          }
+          return 'N/A';
+        }
+      }
+      const fallback = findLineValue(lines, 'Company');
+      return fallback || 'N/A';
+    }
+
+    function buildTechNotes(lines) {
+      const hasWhenCreatedBy = lines.some(line =>
+        line && line.toLowerCase().includes('when created by:')
+      );
+      const findSectionValues = (label, count) => {
+        const index = lines.findIndex(line => line && line.trim() === label);
+        if (index === -1) return [];
+        const values = [];
+        for (let offset = 1; offset <= count; offset++) {
+          const candidate = cleanValue(lines[index + offset]);
+          if (candidate) {
+            values.push(candidate);
+          }
+        }
+        return values;
+      };
+
+      const triggeredValues = findSectionValues('Triggered Rules:', 1);
+      const applyExceptionValues = findSectionValues('Apply exception on:', 2);
+      const whenCreatedByValues = findSectionValues('When created by:', 2);
+
+      const parts = [];
+      const triggered = triggeredValues[0] || '';
+      parts.push(`Triggered rules: ${triggered}`.trim());
+
+      const applyExceptionText = applyExceptionValues.join(' ');
+      if (applyExceptionText) {
+        parts.push(`on ${applyExceptionText}`);
+      } else {
+        parts.push('on');
+      }
+
+      if (hasWhenCreatedBy) {
+        const createdByText = whenCreatedByValues.join(' ');
+        if (createdByText) {
+          parts.push(`when created by: ${createdByText}`);
+        } else {
+          parts.push('when created by:');
+        }
+      }
+
+      return parts.join(' ').replace(/\s+/g, ' ').trim();
+    }
+
+    function buildEventSummary(chunk) {
+      const lines = chunk.split(/\r?\n/);
+      const tableData = parseSelectedTable(lines);
+
+      const eventId = (() => {
+        const exceptionMatch = chunk.match(/Exceptions for event\s+(\d{3,})/i);
+        if (exceptionMatch) {
+          return exceptionMatch[1];
+        }
+        const fallbackMatch = chunk.match(/Event\s+(\d{3,})/);
+        return fallbackMatch ? fallbackMatch[1] : 'N/A';
+      })();
+
+      const process = extractProcess(lines, tableData);
+      const collectorGroup = extractCollectorGroup(lines);
+      const device = extractDevice(lines, tableData);
+      const user = extractLoggedInUser(lines);
+      const company = extractCompany(lines);
+      const certification = (() => {
+        const cert = findLineValue(lines, 'Certificate');
+        if (!cert) return 'N/A';
+        const lower = cert.toLowerCase();
+        if (lower.includes('signed')) {
+          return lower.includes('un') ? 'Unsigned' : 'Signed';
+        }
+        return cert;
+      })();
+      const classification = extractClassification(lines, tableData);
+      const virusTotal = extractVirusTotalLink(chunk);
+      const target = findLineValue(lines, 'Target') || 'N/A';
+      let commandLine = findLineValue(lines, 'Command Line') || '';
+      const exactCommandLineIndex = (() => {
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (!line) continue;
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          if (trimmed.toLowerCase() === 'command line:') {
+            return i;
+          }
+        }
+        return -1;
+      })();
+      if (exactCommandLineIndex !== -1) {
+        let candidate = '';
+        for (let i = exactCommandLineIndex + 1; i < lines.length; i++) {
+          const nextLine = lines[i];
+          if (!nextLine) continue;
+          const cleaned = cleanValue(nextLine);
+          if (!cleaned) continue;
+          candidate = cleaned;
+          break;
+        }
+        if (!candidate || candidate.endsWith(':')) {
+          commandLine = 'N/A';
+        } else {
+          commandLine = candidate;
+        }
+      }
+      if (!commandLine) {
+        commandLine = 'N/A';
+      }
+      const additionalInfo = extractAdditionalInfo(lines, tableData);
+
+      const techNotes = buildTechNotes(lines);
+
+      const summaryLines = [
+        padLabel('Event ID') + eventId,
+        padLabel('Process') + process,
+        padLabel('Collector Group') + collectorGroup,
+        padLabel('Device') + device,
+        padLabel('Logged-in User') + user,
+        padLabel('Company') + company,
+        padLabel('Certification') + certification,
+        padLabel('Classification') + classification,
+        padLabel('Virus Total link') + virusTotal,
+        '',
+        `Target: ${target}`,
+        '',
+        `Command Line: ${commandLine}`,
+        '',
+        `Additional information: ${additionalInfo}`,
+        '',
+        `Tech notes: ${techNotes}`,
+        '',
+        'Next Steps:',
+        'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
+        '-----------------------------------------------------------------------------------------------'
+      ];
+
+      return summaryLines.join('\n');
+    }
+
+    function formatInput() {
+      const raw = inputEl.value;
+      const trimmed = raw.trim();
+      if (!trimmed) {
+        showError('Please paste at least one FortiEDR event.');
+        return;
+      }
+      const events = splitEvents(trimmed);
+      if (!events.length) {
+        showError('No events found. Ensure each event ends with "Event GraphAutomated Analysis".');
+        return;
+      }
+      clearError();
+      const blocks = events.map(buildEventSummary);
+      outputEl.textContent = blocks.join('\n\n');
+      updateCopyButtonState();
     }
 
     function showError(message) {
       errorEl.textContent = message;
       errorEl.style.display = 'block';
+      outputEl.textContent = '';
+      updateCopyButtonState();
     }
 
     function clearError() {
@@ -255,424 +662,34 @@
       errorEl.style.display = 'none';
     }
 
-    function padLabel(label) {
-      return (label + ':').padEnd(26, ' ');
-    }
-
-    function getBasename(value) {
-      if (typeof value !== 'string' || !value.trim()) {
-        return '';
-      }
-      const cleaned = value.trim();
-      const parts = cleaned.split(/[/\\]/);
-      return parts.pop() || cleaned;
-    }
-
-    function stripDomain(user) {
-      if (typeof user !== 'string') {
-        return '';
-      }
-      const trimmed = user.trim();
-      if (!trimmed) return '';
-      const separators = ['\\', '/'];
-      for (const sep of separators) {
-        if (trimmed.includes(sep)) {
-          const bits = trimmed.split(sep);
-          return bits[bits.length - 1];
-        }
-      }
-      return trimmed;
-    }
-
-    function findVirusTotalUrl(node) {
-      const visited = new Set();
-
-      function traverse(value) {
-        if (value === null || value === undefined) return null;
-        if (visited.has(value)) return null;
-        if (typeof value === 'string') {
-          const match = value.match(/https?:\/\/[^\s"']*virustotal[^\s"']*/i);
-          return match ? match[0] : null;
-        }
-        if (typeof value === 'object') {
-          visited.add(value);
-          if (Array.isArray(value)) {
-            for (const item of value) {
-              const found = traverse(item);
-              if (found) return found;
-            }
-          } else {
-            for (const key of Object.keys(value)) {
-              const found = traverse(value[key]);
-              if (found) return found;
-            }
-          }
-        }
-        return null;
-      }
-
-      return traverse(node);
-    }
-
-    function selectLatestClassification(list) {
-      if (!Array.isArray(list) || list.length === 0) return null;
-      let best = null;
-      let bestTime = Number.NEGATIVE_INFINITY;
-      let fallback = null;
-      list.forEach((entry, index) => {
-        if (!entry || typeof entry !== 'object') return;
-        const possibleDate = entry.date || entry.timestamp || entry.time || entry.updated || entry.created;
-        if (possibleDate) {
-          const parsed = Date.parse(possibleDate);
-          if (!Number.isNaN(parsed) && parsed >= bestTime) {
-            bestTime = parsed;
-            best = entry;
-          }
-        }
-        if (!fallback) {
-          fallback = entry;
-        }
-      });
-      return best || fallback;
-    }
-
-    function mapClassification(value) {
-      if (!value || typeof value !== 'string') return 'N/A';
-      const trimmed = value.trim();
-      if (!trimmed) return 'N/A';
-      const lower = trimmed.toLowerCase();
-      if (lower === 'classificationgood' || lower === 'safe') return 'Safe';
-      if (lower === 'classificationinconclusive' || lower === 'inconclusive') return 'Inconclusive';
-      if (trimmed.toLowerCase().startsWith('classification')) {
-        const rest = trimmed.slice('classification'.length);
-        if (!rest) return 'N/A';
-        return rest.charAt(0).toUpperCase() + rest.slice(1).toLowerCase();
-      }
-      return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-    }
-
-    function resolveClassification(data) {
-      const automationList = data?.AutomationData?.classificationList;
-      if (Array.isArray(automationList) && automationList.length) {
-        const entry = selectLatestClassification(automationList);
-        const title = entry?.title || entry?.name || '';
-        const mapped = mapClassification(title);
-        if (mapped !== 'N/A') return mapped;
-      }
-      const fallback = data?.EventClassification;
-      return mapClassification(typeof fallback === 'string' ? fallback : '');
-    }
-
-    function resolveCompany(data) {
-      const primary = typeof data?.AppVendor === 'string' ? data.AppVendor.trim() : '';
-      if (primary) return primary;
-      const fallback = typeof data?.Alerts?.[0]?.MainApp?.Vendor === 'string' ? data.Alerts[0].MainApp.Vendor.trim() : '';
-      return fallback || 'N/A';
-    }
-
-    function resolveCertification(data) {
-      const signingStatus = typeof data?.SigningStatus === 'string' ? data.SigningStatus.trim().toLowerCase() : '';
-      const isSigned = data?.IsSigned === true || signingStatus === 'signed';
-      if (isSigned) return 'Signed';
-      if (data?.IsSigned === false || (signingStatus && signingStatus !== 'signed')) {
-        return 'Unsigned';
-      }
-      return 'N/A';
-    }
-
-    function resolveLoggedInUser(data) {
-      const loggedUser = data?.LoggedUsers?.[0]?.Name;
-      const cleanedLoggedUser = stripDomain(loggedUser);
-      if (cleanedLoggedUser) return cleanedLoggedUser;
-
-      const stackInfo = data?.StackInfos?.[0];
-      const extras = stackInfo?.CommonAdditionalInfo;
-      if (Array.isArray(extras)) {
-        const ownerInfo = extras.find(item => item && (item.Type === 16 || item.type === 16));
-        if (ownerInfo) {
-          const owner = stripDomain(ownerInfo.ProcessOwner || ownerInfo.ProcessEffectiveOwner || ownerInfo.Value || '');
-          if (owner) return owner;
-        }
-      }
-      return 'N/A';
-    }
-
-    function resolveAdditionalInfo(data) {
-      const stackInfo = data?.StackInfos?.[0];
-      const stackType = typeof stackInfo?.StackType === 'string' ? stackInfo.StackType.trim() : '';
-      if (stackType && stackType.toUpperCase().includes('SERVICE')) {
-        return 'Service Access';
-      }
-      return stackType || 'N/A';
-    }
-
-    function resolveTarget(data) {
-      const primary = typeof data?.AuxProcessName === 'string' ? data.AuxProcessName.trim() : '';
-      if (primary) return primary;
-      const stackInfo = data?.StackInfos?.[0];
-      const fromStack = typeof stackInfo?.AuxProcessName === 'string' ? stackInfo.AuxProcessName.trim() : '';
-      if (fromStack) return fromStack;
-      const stackType = typeof stackInfo?.StackType === 'string' ? stackInfo.StackType.trim() : '';
-      return stackType || 'N/A';
-    }
-
-    function resolveCommandLine(data) {
-      const primary = typeof data?.AppDetails?.CommandLine === 'string' ? data.AppDetails.CommandLine.trim() : '';
-      if (primary) return primary;
-      const fallback = typeof data?.Alerts?.[0]?.MainApp?.CommandLine === 'string' ? data.Alerts[0].MainApp.CommandLine.trim() : '';
-      return fallback || 'N/A';
-    }
-
-    function resolveProcess(data) {
-      const options = [
-        getBasename(data?.Application),
-        getBasename(data?.AppDetails?.Executable),
-        getBasename(data?.Alerts?.[0]?.MainApp?.Executable)
-      ];
-      const found = options.find(Boolean);
-      return found || 'N/A';
-    }
-
-    function buildSummary(data, sourceLabel) {
-      const eventId = data?.EventAggId ?? data?.EventId ?? data?.EventUniqueId ?? 'N/A';
-      const lines = [
-        padLabel('Event ID') + (eventId || 'N/A'),
-        padLabel('Process') + resolveProcess(data),
-        padLabel('Collector Group') + (data?.CollectorGroup || 'N/A'),
-        padLabel('Device') + (data?.HostName || 'N/A'),
-        padLabel('Logged-in User') + resolveLoggedInUser(data),
-        padLabel('Company') + resolveCompany(data),
-        padLabel('Certification') + resolveCertification(data),
-        padLabel('Classification') + resolveClassification(data),
-        padLabel('Virus Total link') + (findVirusTotalUrl(data) || 'N/A'),
-        '',
-        '',
-        padLabel('Target') + resolveTarget(data),
-        '',
-        '',
-        padLabel('Command Line') + resolveCommandLine(data),
-        '',
-        '',
-        padLabel('Additional information') + resolveAdditionalInfo(data),
-        '',
-        '',
-        padLabel('Tech notes'),
-        '',
-        '',
-        'Next Steps:',
-        'Please advise on actions you would like LNX to take on this FortiEDR event notification. If no response is given, we will mark as Unsafe and BLOCK.',
-        '-----------------------------------------------------------------------------------------------'
-      ];
-
-      return {
-        text: lines.join('\n'),
-        eventId: eventId && eventId !== 'N/A' ? eventId : sourceLabel
-      };
-    }
-
-    function renderSummary(index) {
-      if (index < 0 || index >= parsedSummaries.length) {
-        outputEl.textContent = '';
-        copyButton.disabled = true;
-        downloadButton.disabled = true;
-        activeIndex = -1;
-        return;
-      }
-      activeIndex = index;
-      const summary = parsedSummaries[index];
-      outputEl.textContent = summary.text;
-      copyButton.disabled = false;
-      downloadButton.disabled = false;
-
-      Array.from(fileListEl.children).forEach((child, idx) => {
-        child.classList.toggle('selected', idx === index);
-      });
-    }
-
-    function populateFileList(items) {
-      fileListEl.innerHTML = '';
-      items.forEach((item, index) => {
-        const pill = document.createElement('button');
-        pill.type = 'button';
-        pill.className = 'file-pill' + (index === activeIndex ? ' selected' : '');
-        pill.textContent = item.displayName;
-        pill.addEventListener('click', () => {
-          renderSummary(index);
-        });
-        fileListEl.appendChild(pill);
-      });
-    }
-
-    function handleParsedResults(results) {
-      if (!Array.isArray(results) || results.length === 0) {
-        resetState();
-        return;
-      }
-      parsedSummaries = results;
-      activeIndex = 0;
-      populateFileList(parsedSummaries);
-      renderSummary(0);
-    }
-
-    function readFileAsText(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = () => reject(reader.error || new Error('Failed to read file.'));
-        reader.readAsText(file);
-      });
-    }
-
-    async function processFiles(fileList) {
-      resetState();
-      clearError();
-      if (!fileList || fileList.length === 0) {
-        return;
-      }
-      try {
-        const promises = Array.from(fileList).map(async (file) => {
-          const text = await readFileAsText(file);
-          let parsed;
-          try {
-            parsed = JSON.parse(text);
-          } catch (err) {
-            throw new Error(`Failed to parse "${file.name}": ${err.message}`);
-          }
-          const summary = buildSummary(parsed, file.name);
-          return {
-            ...summary,
-            displayName: file.name
-          };
-        });
-        const results = await Promise.all(promises);
-        handleParsedResults(results);
-      } catch (err) {
-        resetState();
-        showError(err.message || 'Unable to parse the provided files.');
-      }
-    }
-
-    fileInput.addEventListener('change', (event) => {
-      const files = event.target.files;
-      processFiles(files);
-    });
-
-    dropZone.addEventListener('dragover', (event) => {
-      event.preventDefault();
-      dropZone.classList.add('dragover');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
-    });
-
-    dropZone.addEventListener('drop', (event) => {
-      event.preventDefault();
-      dropZone.classList.remove('dragover');
-      const files = event.dataTransfer.files;
-      fileInput.files = files;
-      processFiles(files);
-    });
-
-    dropZone.addEventListener('click', () => {
-      fileInput.click();
-    });
-
-    dropZone.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        fileInput.click();
-      }
-    });
+    formatButton.addEventListener('click', formatInput);
 
     copyButton.addEventListener('click', async () => {
-      if (activeIndex < 0) return;
+      if (copyButton.disabled) return;
       try {
-        await navigator.clipboard.writeText(parsedSummaries[activeIndex].text);
+        await navigator.clipboard.writeText(outputEl.textContent);
+        const original = copyButton.textContent;
         copyButton.textContent = 'Copied!';
+        copyButton.disabled = true;
         setTimeout(() => {
-          copyButton.textContent = 'Copy to clipboard';
+          copyButton.textContent = original;
+          updateCopyButtonState();
         }, 1800);
       } catch (err) {
         showError('Unable to copy to clipboard.');
       }
     });
 
-    downloadButton.addEventListener('click', () => {
-      if (activeIndex < 0) return;
-      const summary = parsedSummaries[activeIndex];
-      const blob = new Blob([summary.text], { type: 'text/plain' });
-      const filename = `FortiEDR_Summary_${summary.eventId || 'output'}.txt`;
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(link.href);
-    });
-
-    testButton.addEventListener('click', () => {
+    clearButton.addEventListener('click', () => {
+      inputEl.value = '';
+      outputEl.textContent = '';
       clearError();
-      const sampleData = {
-        EventAggId: 149038866,
-        Application: 'C:/Program Files/LG/LG Power Manager.exe',
-        CollectorGroup: 'Default',
-        HostName: 'RHAVEMAN-GRAM11',
-        LoggedUsers: [{ Name: 'DOMAIN\\rhaveman' }],
-        AppVendor: '',
-        Alerts: [
-          {
-            MainApp: {
-              Executable: 'C:/Program Files/LG/LG Power Manager.exe',
-              Vendor: 'LG Electronics',
-              CommandLine: '"C:/Program Files/LG/LG Power Manager.exe" /start'
-            }
-          }
-        ],
-        AppDetails: {
-          Executable: 'C:/Program Files/LG/LG Power Manager.exe',
-          CommandLine: ''
-        },
-        IsSigned: true,
-        SigningStatus: 'Signed',
-        AutomationData: {
-          classificationList: [
-            { title: 'ClassificationGood', date: '2024-02-20T10:00:00Z' }
-          ]
-        },
-        informationBlock: {
-          items: [
-            {
-              key: 'hash',
-              value: 'https://www.virustotal.com/gui/file/sample'
-            }
-          ]
-        },
-        AuxProcessName: 'WMI SERVICE ACCESS',
-        StackInfos: [
-          {
-            StackType: 'SERVICE ACCESS',
-            CommonAdditionalInfo: [
-              {
-                Type: 16,
-                ProcessOwner: 'DOMAIN\\rhaveman'
-              }
-            ]
-          }
-        ]
-      };
-
-      const summary = buildSummary(sampleData, 'Sample');
-      parsedSummaries = [
-        {
-          ...summary,
-          displayName: 'Sample Incident'
-        }
-      ];
-      activeIndex = 0;
-      populateFileList(parsedSummaries);
-      renderSummary(0);
+      inputEl.focus();
+      updateCopyButtonState();
     });
+
+    outputEl.addEventListener('input', updateCopyButtonState);
+    updateCopyButtonState();
   </script>
 </body>
 </html>
