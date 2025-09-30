@@ -146,6 +146,15 @@
       white-space: pre;
     }
 
+    pre[contenteditable="true"] {
+      outline: none;
+      cursor: text;
+    }
+
+    pre[contenteditable="true"]:focus-visible {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.35);
+    }
+
     @media (prefers-color-scheme: light) {
       pre {
         background: #111827;
@@ -197,7 +206,7 @@
         <button id="clearButton" type="button" class="secondary">Clear</button>
       </div>
 
-      <pre id="output" aria-live="polite"></pre>
+      <pre id="output" aria-live="polite" contenteditable="true" spellcheck="false"></pre>
       <div class="error" id="error" role="alert"></div>
 
       <p class="footer-note">The parser splits events by the literal marker “Event GraphAutomated Analysis” and fills in missing values with N/A automatically.</p>
@@ -211,6 +220,11 @@
     const clearButton = document.getElementById('clearButton');
     const outputEl = document.getElementById('output');
     const errorEl = document.getElementById('error');
+
+    const updateCopyButtonState = () => {
+      const hasContent = outputEl.textContent.trim().length > 0;
+      copyButton.disabled = !hasContent;
+    };
 
     function padLabel(label) {
       return (label + ':').padEnd(26, ' ');
@@ -633,14 +647,14 @@
       clearError();
       const blocks = events.map(buildEventSummary);
       outputEl.textContent = blocks.join('\n\n');
-      copyButton.disabled = false;
+      updateCopyButtonState();
     }
 
     function showError(message) {
       errorEl.textContent = message;
       errorEl.style.display = 'block';
       outputEl.textContent = '';
-      copyButton.disabled = true;
+      updateCopyButtonState();
     }
 
     function clearError() {
@@ -659,7 +673,7 @@
         copyButton.disabled = true;
         setTimeout(() => {
           copyButton.textContent = original;
-          copyButton.disabled = outputEl.textContent.trim().length === 0;
+          updateCopyButtonState();
         }, 1800);
       } catch (err) {
         showError('Unable to copy to clipboard.');
@@ -669,10 +683,13 @@
     clearButton.addEventListener('click', () => {
       inputEl.value = '';
       outputEl.textContent = '';
-      copyButton.disabled = true;
       clearError();
       inputEl.focus();
+      updateCopyButtonState();
     });
+
+    outputEl.addEventListener('input', updateCopyButtonState);
+    updateCopyButtonState();
   </script>
 </body>
 </html>
