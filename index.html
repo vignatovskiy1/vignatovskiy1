@@ -198,7 +198,7 @@
       <p>Paste FortiEDR event notifications below and generate human-readable summaries that follow the exact SOC handoff format.</p>
 
       <label for="input" class="sr-only">Paste FortiEDR events</label>
-      <textarea id="input" placeholder="Paste FortiEDR event text here...&#10;&#10;Each event block must end with: Event GraphAutomated Analysis"></textarea>
+      <textarea id="input" placeholder="Paste FortiEDR event text here...&#10;&#10;Each event block must end with: Event GraphAutomated Analysis or Event Graph"></textarea>
 
       <div class="controls">
         <button id="formatButton" type="button">Format incidents</button>
@@ -209,7 +209,7 @@
       <pre id="output" aria-live="polite" contenteditable="true" spellcheck="false"></pre>
       <div class="error" id="error" role="alert"></div>
 
-      <p class="footer-note">The parser splits events by the literal marker “Event GraphAutomated Analysis” and fills in missing values with N/A automatically.</p>
+      <p class="footer-note">The parser splits events by the literal markers “Event GraphAutomated Analysis” or “Event Graph” and fills in missing values with N/A automatically.</p>
     </section>
   </main>
 
@@ -261,7 +261,7 @@
 
     function splitEvents(rawText) {
       return rawText
-        .split('Event GraphAutomated Analysis')
+        .split(/Event Graph(?:Automated Analysis)?/)
         .map(chunk => chunk.trim())
         .filter(chunk => chunk.length > 0);
     }
@@ -641,7 +641,7 @@
       }
       const events = splitEvents(trimmed);
       if (!events.length) {
-        showError('No events found. Ensure each event ends with "Event GraphAutomated Analysis".');
+        showError('No events found. Ensure each event ends with "Event GraphAutomated Analysis" or "Event Graph".');
         return;
       }
       clearError();
